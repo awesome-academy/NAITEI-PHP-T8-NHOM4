@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LanguageController;
+use App\Http\Middleware\Localization;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('lang/{lang}', [LanguageController::class, 'changeLang'])->name('lang.change');
+
+Route::middleware(Localization::class)->group(function () 
+{
+    Route::get('/', function () 
+    {
+        return view('welcome');
+    });
+
+    Route::get('/dashboard', function () 
+    {
+        return view('temp');
+    });
 });
