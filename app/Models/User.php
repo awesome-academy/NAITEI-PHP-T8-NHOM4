@@ -5,6 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -18,9 +21,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'username',
+        'fname',
+        'lname',
         'email',
         'password',
+        'google_id',
+        'role_id',
     ];
 
     /**
@@ -42,4 +49,30 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Relationships
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(Image::class, 'path_id')->where('image_type', 'user');
+    }
 }

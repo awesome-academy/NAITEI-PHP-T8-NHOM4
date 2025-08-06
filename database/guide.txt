@@ -1,0 +1,52 @@
+- Tạo migration files:
+php artisan make:migration create_roles_table
+php artisan make:migration update_users_table --table=users
+php artisan make:migration create_categories_table
+php artisan make:migration create_products_table
+php artisan make:migration create_carts_table
+php artisan make:migration create_cart_items_table
+php artisan make:migration create_orders_table
+php artisan make:migration create_order_details_table
+php artisan make:migration create_feedbacks_table
+php artisan make:migration create_images_table
+
+- Sửa các file migration đã tạo:
+  - Thêm các trường cần thiết vào các bảng tương ứng.
+  - Đảm bảo các khóa ngoại được thiết lập đúng.
+
+- Tạo model tương ứng với các bảng:
+php artisan make:model Role
+php artisan make:model Category
+php artisan make:model Product
+php artisan make:model Cart
+php artisan make:model CartItem
+php artisan make:model Order
+php artisan make:model OrderDetail
+php artisan make:model Feedback
+php artisan make:model Image
+
+- Sửa các model để định nghĩa quan hệ giữa các bảng:
+  - Ví dụ: `Product` có thể có nhiều `Feedback`, `Order` có nhiều `OrderDetail`, v.v.
+
+- Chạy migration:
+php artisan migrate
+
+- Tạo file seeders:
+php artisan make:seeder RoleSeeder
+php artisan make:seeder UserSeeder
+
+- Role seeders:
+    public function run()
+    {
+        Role::create(['name' => 'User']);
+        Role::create(['name' => 'Admin']);
+    }
+
+- User seeders:
+    
+- Cập nhật file `database/seeders/DatabaseSeeder.php` để gọi các seeders đã tạo:
+- Chạy seeder:
+php artisan db:seed
+
+- Reset nếu cần thiết:
+php artisan migrate:fresh --seed
