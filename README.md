@@ -64,3 +64,22 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Localization (React)
+
+This project uses [react-i18next](https://react.i18next.com/) for localization in React components.
+
+### How to use
+
+- Language files are in `resources/js/locales/en.json` and `resources/js/locales/vi.json`.
+- The i18n provider is initialized in `resources/js/i18n.js` and wrapped in the app entry (`app.jsx`).
+- Use the `useTranslation` hook in your React components:
+
+```jsx
+import { useTranslation } from 'react-i18next';
+const { t } = useTranslation();
+// Example usage:
+<span>{t('welcome')}</span>
+```
+
+To add new translations, update the JSON files in `resources/js/locales/`.
