@@ -41,21 +41,12 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $login = $this->input('login');
-        $credentials = [];
+        $loginField = filter_var($this->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        // Determine if login input is email or username
-        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
-            $credentials = [
-                'email' => $login,
-                'password' => $this->input('password'),
-            ];
-        } else {
-            $credentials = [
-                'username' => $login,
-                'password' => $this->input('password'),
-            ];
-        }
+        $credentials = [
+            $loginField => $this->input('login'),
+            'password' => $this->input('password'),
+        ];
 
         if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
@@ -96,6 +87,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('login')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('login')) . '|' . $this->ip());
     }
 }
