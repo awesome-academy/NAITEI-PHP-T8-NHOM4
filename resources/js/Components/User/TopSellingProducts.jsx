@@ -21,7 +21,7 @@ export default function TopSellingProducts({ products = [] }) {
                         <div className="md:row-span-2">
                             <div className="relative h-96 md:h-full bg-orange-100 rounded-lg overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-r from-orange-100 to-transparent"></div>
-                                <div className="absolute top-8 left-8 z-10">
+                                <div className="absolute top-8 left-8 z-10" style = {{ display:'relative', maxWidth: '40%'}}   >
                                     <span className="inline-block bg-orange-500 text-white text-xs px-3 py-1 rounded-full mb-4">
                                         TOP SELLER
                                     </span>
@@ -32,7 +32,7 @@ export default function TopSellingProducts({ products = [] }) {
                                         {featuredProduct.description || "Check out this customer favorite from our best-selling lineup."}
                                     </p>
                                     <Link
-                                        href={`/product/${featuredProduct.slug || featuredProduct.id}`}
+                                        href={`/products/${featuredProduct.slug || featuredProduct.id}`}
                                         className="bg-white text-gray-900 px-6 py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
                                     >
                                         SHOP NOW
@@ -42,6 +42,7 @@ export default function TopSellingProducts({ products = [] }) {
                                     src={featuredProduct.main_image}
                                     alt={featuredProduct.name}
                                     className="absolute bottom-0 right-0 h-80 w-auto object-cover"
+                                    style={{ maxWidth: '300px' }}
                                 />
                             </div>
                         </div>

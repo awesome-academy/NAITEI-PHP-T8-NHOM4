@@ -36,6 +36,13 @@ export default function Header() {
 
                     {/* Right side icons */}
                     <div className="flex items-center space-x-4">
+                        {/* Language Switcher */}
+                        <Link
+                            href={route('lang.change', document.documentElement.lang === 'vi' ? 'en' : 'vi')}
+                            className="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                            {document.documentElement.lang === 'vi' ? 'EN' : 'VI'}
+                        </Link>
 
                         {/* Search */}
                         <button className="text-gray-600 hover:text-gray-900 transition-colors">
@@ -59,7 +66,7 @@ export default function Header() {
                                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                                     {auth.user ? (
                                         <div className="py-1">
-                                            <div className="px-4 py-2 text-sm text-gray-700">Hi, {auth.user.name}</div>
+                                            <div className="px-4 py-2 text-sm text-gray-700">Hi, <strong style={{color:'red',fontSize:'20px'}}>{auth.user.username}</strong></div>
                                             <Link href="/logout" method="post" as="button" className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</Link>
                                         </div>
                                     ) : (

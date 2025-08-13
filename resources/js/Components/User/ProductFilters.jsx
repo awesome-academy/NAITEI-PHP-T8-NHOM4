@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 export default function ProductFilters({
     categories,
-    brands,
     priceRange,
     activeFilters,
     onFilterChange,
@@ -20,15 +19,6 @@ export default function ProductFilters({
             : [...currentCategories, category];
         
         onFilterChange({ categories: updatedCategories });
-    };
-
-    const handleBrandChange = (brand) => {
-        const currentBrands = activeFilters.brands || [];
-        const updatedBrands = currentBrands.includes(brand)
-            ? currentBrands.filter(b => b !== brand)
-            : [...currentBrands, brand];
-        
-        onFilterChange({ brands: updatedBrands });
     };
 
     const handleAvailabilityChange = (availability) => {
@@ -119,24 +109,6 @@ export default function ProductFilters({
                             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500"
                         />
                     </div>
-                </div>
-            </div>
-
-            {/* Brands Filter */}
-            <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">BRANDS</h3>
-                <div className="space-y-3">
-                    {brands.map((brand) => (
-                        <label key={brand} className="flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={(activeFilters.brands || []).includes(brand)}
-                                onChange={() => handleBrandChange(brand)}
-                                className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                            />
-                            <span className="ml-3 text-gray-700">{brand}</span>
-                        </label>
-                    ))}
                 </div>
             </div>
 

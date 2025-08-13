@@ -9,7 +9,6 @@ import Features from '@/Components/User/Features';
 export default function ProductsIndex({ 
     products, 
     categories, 
-    brands, 
     priceRange, 
     filters, 
     totalCount 
@@ -61,7 +60,6 @@ export default function ProductsIndex({
                         <div className="hidden lg:block w-80 flex-shrink-0">
                             <ProductFilters
                                 categories={categories}
-                                brands={brands}
                                 priceRange={priceRange}
                                 activeFilters={activeFilters}
                                 onFilterChange={handleFilterChange}
@@ -148,7 +146,6 @@ export default function ProductsIndex({
                             <div className="flex-1 overflow-y-auto p-4">
                                 <ProductFilters
                                     categories={categories}
-                                    brands={brands}
                                     priceRange={priceRange}
                                     activeFilters={activeFilters}
                                     onFilterChange={handleFilterChange}
