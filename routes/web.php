@@ -42,10 +42,6 @@ Route::middleware(Localization::class)->group(function () {
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
-    Route::middleware(['auth', 'can:is-admin'])->group(function () {
-        // Admin routes can be added here
-    });
-
     // user route example
     // Route::get('/user/{user}', [UserController::class, 'show'])
     //     ->middleware(['auth', 'can:view,user'])

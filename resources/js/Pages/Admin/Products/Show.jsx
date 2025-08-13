@@ -1,9 +1,12 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
-import { HomeIcon, ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ArrowLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 export default function ProductShow({ auth, product }) {
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const breadcrumbs = [
         { label: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
         { label: 'Products', href: '/admin/products' },
@@ -49,6 +52,14 @@ export default function ProductShow({ auth, product }) {
                 {statusText}
             </span>
         );
+    };
+
+    const handleDelete = () => {
+        router.delete(`/admin/products/${product.id}`, {
+            onSuccess: () => {
+                setShowDeleteModal(false);
+            }
+        });
     };
 
     return (
@@ -204,17 +215,51 @@ export default function ProductShow({ auth, product }) {
                                 Edit Product
                             </Link>
                             
-                            <button className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
-                                Clone Product
-                            </button>
-                            
-                            <button className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <button 
+                                onClick={() => setShowDeleteModal(true)}
+                                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            >
+                                <TrashIcon className="h-4 w-4 mr-2" />
                                 Delete Product
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div className="mt-3 text-center">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                                <TrashIcon className="h-6 w-6 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mt-4">Delete Product</h3>
+                            <div className="mt-2 px-7 py-3">
+                                <p className="text-sm text-gray-500">
+                                    Are you sure you want to delete "<strong>{product.name}</strong>"? 
+                                    This action cannot be undone and will also delete all associated images.
+                                </p>
+                            </div>
+                            <div className="items-center px-4 py-3">
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2"
+                                >
+                                    Delete Product
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
