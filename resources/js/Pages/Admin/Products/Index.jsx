@@ -110,6 +110,8 @@ export default function ProductsIndex({ auth, products = [] }) {
                 <DataTable
                     columns={columns}
                     data={products}
+                    filterable={true}
+                    filterColumn="category"
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
