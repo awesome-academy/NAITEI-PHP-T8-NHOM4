@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Feature from '@/Components/User/Features';
 
@@ -56,7 +56,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                             {/* Main Image */}
                             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                                 <img
-                                src={selectedImageIndex === 0 ? product.main_image : product.image_gallery?.[selectedImageIndex - 1]}
+                                src={selectedImageIndex === 0 ? product.image_gallery[0] : product.image_gallery?.[selectedImageIndex]}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                                 />
@@ -65,32 +65,31 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                             {/* Thumbnail Gallery */}
                             {product.image_gallery?.length > 0 && (
                                 <div className="flex space-x-2">
-                                {/* Main Image Thumbnail */}
-                                <button
-                                    onClick={() => setSelectedImageIndex(0)}
-                                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === 0 ? 'border-orange-500' : 'border-gray-200'}`}
-                                >
-                                    <img
-                                    src={product.main_image}
-                                    alt={`${product.name} main image`}
-                                    className="w-full h-full object-cover"
-                                    />
-                                </button>
-
-                                {/* Gallery Thumbnails */}
-                                {product.image_gallery.map((image, index) => (
+                                    {/* Main Image Thumbnail */}
                                     <button
-                                    key={index}
-                                    onClick={() => setSelectedImageIndex(index + 1)} // +1 to offset main image
-                                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index + 1 ? 'border-orange-500' : 'border-gray-200'}`}
+                                        onClick={() => setSelectedImageIndex(0)}
+                                        className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === 0 ? 'border-orange-500' : 'border-gray-200'}`}
                                     >
-                                    <img
-                                        src={image}
-                                        alt={`${product.name} view ${index + 1}`}
-                                        className="w-full h-full object-cover"
-                                    />
+                                        <img
+                                            src={product.image_gallery[0]}
+                                            alt={`${product.name} main image`}
+                                            className="w-full h-full object-cover"
+                                        />
                                     </button>
-                                ))}
+
+                                    {product.image_gallery.slice(1).map((image, index) => (
+                                        <button
+                                            key={index + 1}
+                                            onClick={() => setSelectedImageIndex(index + 1)}
+                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index + 1 ? 'border-orange-500' : 'border-gray-200'}`}
+                                        >
+                                            <img
+                                                src={image}
+                                                alt={`${product.name} view ${index + 1}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                    ))}
                                 </div>
                             )}
                             </div>
@@ -158,7 +157,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                             </div>
 
                             <div className="space-y-6">
-                                {product.reviews.map((review) => (
+                                {product.feedback.map((review) => (
                                     <div key={review.id} className="flex space-x-4">
                                         <img
                                             src={review.avatar}
