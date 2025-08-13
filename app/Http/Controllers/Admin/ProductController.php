@@ -3,15 +3,54 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Http\Controllers\ImageController;
+use App\Http\Requests\Admin\StoreProductRequest;
+use App\Http\Requests\Admin\UpdateProductRequest;
+use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\User;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function createProduct()
+    protected $imageController;
+
+    public function __construct(ImageController $imageController)
+    {
+        $this->imageController = $imageController;
+    }
+    
+    // Product CRUD Methods
+    public function index()
+    {
+        $user = User::with('role')->find(auth()->id());
+        $products = Product::with('category')->latest()->get();
+
+        return Inertia::render('Admin/Products/Index', [
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'role' => $user->role ? $user->role->name : 'User'
+                ]
+            ],
+            'products' => $products->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => '$' . number_format($product->price, 2),
+                    'category' => $product->category ? $product->category->name : 'Uncategorized',
+                    'stock' => $product->stock_quantity ?? 0,
+                    'image' => $product->images()->where('image_type', 'product')->first()?->image_path,
+                    'created_at' => $product->created_at->format('Y-m-d')
+                ];
+            })
+        ]);
+    }
+
+    public function create()
     {
         $user = User::with('role')->find(auth()->id());
         $categories = Category::all();
@@ -29,12 +68,21 @@ class ProductController extends Controller
         ]);
     }
 
-    public function storeProduct(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        return redirect()->route('admin.products.index');
+        $productData = $request->only(['name', 'description', 'price', 'category_id', 'stock_quantity']);
+        $product = Product::create($productData);
+
+        // Handle multiple images upload using ImageController generic method
+        if ($request->hasFile('images')) {
+            $this->imageController->storeImages('product', $product->id, $request->file('images'), 'products', $product->name);
+        }
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product created successfully.');
     }
 
-    public function showProduct(Product $product)
+    public function show(Product $product)
     {
         $user = User::with('role')->find(auth()->id());
         $product->load(['category', 'images']);
@@ -63,7 +111,7 @@ class ProductController extends Controller
         ]);
     }
 
-   public function editProduct(Product $product)
+    public function edit(Product $product)
     {
         $user = User::with('role')->find(auth()->id());
         $categories = Category::all();
@@ -94,13 +142,33 @@ class ProductController extends Controller
         ]);
     }
 
-    public function updateProduct(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        return redirect()->route('admin.products.show', $product->id);
+        $productData = $request->only(['name', 'description', 'price', 'category_id', 'stock_quantity']);
+        $product->update($productData);
+
+        // Handle new images upload using ImageController generic method
+        if ($request->hasFile('images')) {
+            $this->imageController->storeImages('product', $product->id, $request->file('images'), 'products', $product->name);
+        }
+
+        return redirect()->route('admin.products.show', $product->id)
+            ->with('success', 'Product updated successfully.');
     }
 
-    public function destroyProduct(Product $product)
+    public function destroy(Product $product)
     {
-        return redirect()->route('admin.products.index');
+        // Delete all product images using ImageController
+        $this->imageController->destroyImages('product', $product->id);
+        
+        $product->delete();
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product deleted successfully.');
+    }
+
+    public function destroyProductImage($productId, $imageId)
+    {
+        return $this->imageController->destroyImage($imageId);
     }
 }

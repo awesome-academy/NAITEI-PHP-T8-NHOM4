@@ -40,19 +40,19 @@ export default function ProductEdit({ auth, product, categories }) {
         URL.revokeObjectURL(imagePreviews[index]);
     };
 
+    
+
     const removeExistingImage = (imageId) => {
-        router.delete(
-            `/admin/products/${product.id}/images/${imageId}`,
-            {
-                onSuccess: () => {
-                    // Reload the page to reflect the changes
-                    router.reload();
-                },
-                onError: (errors) => {
-                    console.error('Failed to delete image', errors);
-                }
+        if (!confirm('Are you sure you want to delete this image?')) {
+            return;
+        }
+
+        router.delete(`/admin/products/${product.id}/images/${imageId}`, {
+            preserveScroll: true,
+            onError: (errors) => {
+                alert('Failed to delete image. Please try again.');
             }
-        );
+        });
     };
 
     const breadcrumbs = [
@@ -82,9 +82,9 @@ export default function ProductEdit({ auth, product, categories }) {
     const submit = (e) => {
         e.preventDefault();
         clearErrors();
-
-        // Always use put method with forceFormData for consistency
-        put(route('admin.products.update', product.id), {
+        
+        // Always use post method with forceFormData for consistency
+        post(route('admin.products.update', product.id), {
             forceFormData: true,
             onSuccess: () => {
                 // Redirect will be handled by the controller
@@ -94,8 +94,6 @@ export default function ProductEdit({ auth, product, categories }) {
             }
         });
     };
-
-    const currentImage = product.images?.find(img => img.image_type === 'product');
 
     return (
         <AdminLayout user={auth.user}>

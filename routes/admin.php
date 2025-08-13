@@ -7,20 +7,21 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'can:is-admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Users Management
     Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
 
     // Products Management
-    Route::get('/products', [AdminController::class, 'products'])->name('admin.products.index');
-    Route::get('/products/create', [ProductController::class, 'createProduct'])->name('admin.products.create');
-    Route::post('/products', [ProductController::class, 'storeProduct'])->name('admin.products.store');
-    Route::get('/products/{product}', [ProductController::class, 'showProduct'])->name('admin.products.show');
-    Route::get('/products/{product}/edit', [ProductController::class, 'editProduct'])->name('admin.products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'updateProduct'])->name('admin.products.update');
-    Route::delete('/products/{product}', [ProductController::class, 'destroyProduct'])->name('admin.products.destroy');
+    Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('admin.products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('admin.products.show');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
+    Route::post('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
     Route::delete('/products/{product}/images/{image}', [ProductController::class, 'destroyProductImage'])->name('admin.products.images.destroy');
 
     // Categories Management
