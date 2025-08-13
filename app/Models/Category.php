@@ -15,6 +15,16 @@ class Category extends Model
         'description',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     // Relationships
     public function products(): HasMany
     {
