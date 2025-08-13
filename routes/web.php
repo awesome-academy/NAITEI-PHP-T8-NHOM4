@@ -7,6 +7,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Middleware\Localization;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Auth\GoogleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,8 @@ use App\Http\Controllers\ProductController;
 Route::get('lang/{lang}', [LanguageController::class, 'changeLang'])->name('lang.change');
 
 Route::middleware(Localization::class)->group(function () {
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
