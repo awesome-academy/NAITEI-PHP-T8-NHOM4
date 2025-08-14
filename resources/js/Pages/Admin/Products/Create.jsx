@@ -3,8 +3,10 @@ import { Head, useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { HomeIcon, ArrowLeftIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductCreate({ auth, categories = [] }) {
+    const { t } = useTranslation();
     const [selectedImages, setSelectedImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
 
@@ -22,7 +24,6 @@ export default function ProductCreate({ auth, categories = [] }) {
         setSelectedImages(files);
         setData('images', files);
 
-        // Create preview URLs
         const previews = files.map(file => URL.createObjectURL(file));
         setImagePreviews(previews);
     };
@@ -35,7 +36,6 @@ export default function ProductCreate({ auth, categories = [] }) {
         setImagePreviews(newPreviews);
         setData('images', newSelectedImages);
         
-        // Clean up the URL object
         URL.revokeObjectURL(imagePreviews[index]);
     };
 
@@ -47,16 +47,16 @@ export default function ProductCreate({ auth, categories = [] }) {
     };
 
     const breadcrumbs = [
-        { label: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
-        { label: 'Products', href: '/admin/products' },
-        { label: 'Create Product' }
+        { label: t('dashboard'), href: '/admin/dashboard', icon: HomeIcon },
+        { label: t('products'), href: '/admin/products' },
+        { label: t('create_product') }
     ];
 
     const actions = [
         {
             type: 'link',
             href: '/admin/products',
-            label: 'Back to Products',
+            label: t('back_to_products'),
             icon: ArrowLeftIcon,
             className: 'bg-gray-600 hover:bg-gray-700'
         }
@@ -64,11 +64,11 @@ export default function ProductCreate({ auth, categories = [] }) {
 
     return (
         <AdminLayout user={auth.user}>
-            <Head title="Create Product" />
+            <Head title={t('create_product')} />
 
             <PageHeader
-                title="Create Product"
-                subtitle="Add a new product to your inventory"
+                title={t('create_product')}
+                subtitle={t('add_new_product_subtitle')}
                 breadcrumbs={breadcrumbs}
                 actions={actions}
             />
@@ -82,14 +82,14 @@ export default function ProductCreate({ auth, categories = [] }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Product Name *
+                                        {t('product_name')} *
                                     </label>
                                     <input
                                         type="text"
                                         value={data.name}
                                         onChange={e => setData('name', e.target.value)}
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter product name"
+                                        placeholder={t('enter_product_name')}
                                         required
                                     />
                                     {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -99,14 +99,14 @@ export default function ProductCreate({ auth, categories = [] }) {
                             {/* Description */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Description
+                                    {t('description')}
                                 </label>
                                 <textarea
                                     value={data.description}
                                     onChange={e => setData('description', e.target.value)}
                                     rows={4}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Product description"
+                                    placeholder={t('product_description_placeholder')}
                                 />
                                 {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                             </div>
@@ -115,7 +115,7 @@ export default function ProductCreate({ auth, categories = [] }) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Price *
+                                        {t('price')} *
                                     </label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-2 text-gray-500">$</span>
@@ -134,7 +134,7 @@ export default function ProductCreate({ auth, categories = [] }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Stock Quantity *
+                                        {t('stock_quantity')} *
                                     </label>
                                     <input
                                         type="number"
@@ -149,7 +149,7 @@ export default function ProductCreate({ auth, categories = [] }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Category *
+                                        {t('category')} *
                                     </label>
                                     <select
                                         value={data.category_id}
@@ -157,7 +157,7 @@ export default function ProductCreate({ auth, categories = [] }) {
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         required
                                     >
-                                        <option value="">Select Category</option>
+                                        <option value="">{t('select_category')}</option>
                                         {categories.map(category => (
                                             <option key={category.id} value={category.id}>
                                                 {category.name}
@@ -171,7 +171,7 @@ export default function ProductCreate({ auth, categories = [] }) {
                             {/* Images Upload */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Product Images
+                                    {t('product_images')}
                                 </label>
                                 <input
                                     type="file"
@@ -185,19 +185,19 @@ export default function ProductCreate({ auth, categories = [] }) {
                                     <p key={key} className="mt-1 text-sm text-red-600">{errors[key]}</p>
                                 ))}
                                 <p className="mt-1 text-sm text-gray-500">
-                                    Accepted formats: JPEG, PNG, JPG, GIF, WEBP (Max: 2MB each). You can select multiple images.
+                                    {t('accepted_formats')}
                                 </p>
 
                                 {/* Image Previews */}
                                 {imagePreviews.length > 0 && (
                                     <div className="mt-4">
-                                        <h4 className="text-sm font-medium text-gray-700 mb-2">Preview Images:</h4>
+                                        <h4 className="text-sm font-medium text-gray-700 mb-2">{t('preview_images')}</h4>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {imagePreviews.map((preview, index) => (
                                                 <div key={index} className="relative group">
                                                     <img
                                                         src={preview}
-                                                        alt={`Preview ${index + 1}`}
+                                                        alt={`${t('preview')} ${index + 1}`}
                                                         className="w-full h-32 object-cover rounded-lg border border-gray-300"
                                                     />
                                                     <button
@@ -221,14 +221,14 @@ export default function ProductCreate({ auth, categories = [] }) {
                                     onClick={() => window.history.back()}
                                     className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                                 >
-                                    {processing ? 'Creating...' : 'Create Product'}
+                                    {processing ? t('creating') : t('create_product')}
                                 </button>
                             </div>
                         </form>

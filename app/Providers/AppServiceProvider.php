@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia; // ← make sure to import this
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Share Laravel's current locale with all Inertia pages
+        Inertia::share([
+            'locale' => function () {
+                return app()->getLocale();
+            },
+        ]);
     }
 }

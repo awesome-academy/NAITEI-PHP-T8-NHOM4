@@ -4,11 +4,14 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import { Head, useForm, Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
+
+    const { t } = useTranslation();
 
     const submit = (e) => {
         e.preventDefault();
@@ -17,17 +20,17 @@ export default function ForgotPassword({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Forgot Password" />
+            <Head title={t('forgot_password_title', 'Forgot Password')} />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                Forgot Password?
+                                {t('forgot_password_heading', 'Forgot Password?')}
                             </h2>
                             <p className="text-gray-600">
-                                No problem. Just let us know your email address and we will email you a password reset link.
+                                {t('forgot_password_desc', 'No problem. Just let us know your email address and we will email you a password reset link.')}
                             </p>
                         </div>
 
@@ -39,7 +42,7 @@ export default function ForgotPassword({ status }) {
 
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="email" value="Email" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="email" value={t('email', 'Email')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="email"
                                     type="email"
@@ -59,7 +62,7 @@ export default function ForgotPassword({ status }) {
                                     className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 py-3 rounded-lg font-medium transition duration-200" 
                                     disabled={processing}
                                 >
-                                    {processing ? 'Sending...' : 'Email Password Reset Link'}
+                                    {processing ? t('sending', 'Sending...') : t('email_password_reset_link', 'Email Password Reset Link')}
                                 </PrimaryButton>
 
                                 <div className="text-center">
@@ -67,7 +70,7 @@ export default function ForgotPassword({ status }) {
                                         href={route('login')}
                                         className="text-sm text-indigo-600 hover:text-indigo-500 font-medium transition duration-200"
                                     >
-                                        Back to login
+                                        {t('back_to_login', 'Back to login')}
                                     </Link>
                                 </div>
                             </div>

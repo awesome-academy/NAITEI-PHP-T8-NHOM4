@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 export default function NewArrivals({ products = [] }) {
+    const { t } = useTranslation();
     const displayProducts = products;
 
     return (
         <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-light text-gray-900 mb-4">New Arrivals</h2>
+                    <h2 className="text-3xl font-light text-gray-900 mb-4">{t('newArrivals.title')}</h2>
                     <p className="text-gray-500 max-w-2xl mx-auto">
-                        Check out our latest collections featuring contemporary designs and timeless pieces. The new collection brings fresh ideas to your home.
+                        {t('newArrivals.subtitle')}
                     </p>
                 </div>
 
@@ -46,7 +48,7 @@ export default function NewArrivals({ products = [] }) {
                         href="/products"
                         className="inline-block border border-gray-300 text-gray-900 px-8 py-3 text-sm font-medium hover:bg-gray-50 transition-colors"
                     >
-                        VIEW MORE
+                        {t('newArrivals.viewMore')}
                     </Link>
                 </div>
             </div>

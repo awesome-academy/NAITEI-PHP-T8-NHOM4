@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Feature from '@/Components/User/Features';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductDetail({ auth, product, relatedProducts }) {
+    const { t } = useTranslation();
     const [quantity, setQuantity] = useState(1);
     const [totalPrice, setTotalPrice] = useState(product.price);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -16,7 +18,6 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
             return newQuantity;
         });
     };
-
 
     const renderStars = (rating) => {
         return Array.from({ length: 5 }, (_, index) => (
@@ -32,7 +33,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
     return (
         <UserLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Product Details</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{t('productDetails')}</h2>}
         >
             <Head title={product.name} />
 
@@ -41,9 +42,9 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
 
                     {/* Breadcrumb */}
                     <nav className="mb-8 text-sm text-gray-600">
-                        <span>Products</span>
+                        <span>{t('products')}</span>
                         <span className="mx-2">&gt;</span>
-                        <span>{product.category || 'Category'}</span>
+                        <span>{product.category || t('category')}</span>
                         <span className="mx-2">&gt;</span>
                         <span className="text-gray-900">{product.name}</span>
                     </nav>
@@ -53,45 +54,45 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
 
                             {/* Product Images */}
                             <div className="space-y-4">
-                            {/* Main Image */}
-                            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                <img
-                                src={selectedImageIndex === 0 ? product.image_gallery[0] : product.image_gallery?.[selectedImageIndex]}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                                />
-                            </div>
+                                {/* Main Image */}
+                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                    <img
+                                        src={selectedImageIndex === 0 ? product.image_gallery[0] : product.image_gallery?.[selectedImageIndex]}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
 
-                            {/* Thumbnail Gallery */}
-                            {product.image_gallery?.length > 0 && (
-                                <div className="flex space-x-2">
-                                    {/* Main Image Thumbnail */}
-                                    <button
-                                        onClick={() => setSelectedImageIndex(0)}
-                                        className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === 0 ? 'border-orange-500' : 'border-gray-200'}`}
-                                    >
-                                        <img
-                                            src={product.image_gallery[0]}
-                                            alt={`${product.name} main image`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </button>
-
-                                    {product.image_gallery.slice(1).map((image, index) => (
+                                {/* Thumbnail Gallery */}
+                                {product.image_gallery?.length > 0 && (
+                                    <div className="flex space-x-2">
+                                        {/* Main Image Thumbnail */}
                                         <button
-                                            key={index + 1}
-                                            onClick={() => setSelectedImageIndex(index + 1)}
-                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index + 1 ? 'border-orange-500' : 'border-gray-200'}`}
+                                            onClick={() => setSelectedImageIndex(0)}
+                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === 0 ? 'border-orange-500' : 'border-gray-200'}`}
                                         >
                                             <img
-                                                src={image}
-                                                alt={`${product.name} view ${index + 1}`}
+                                                src={product.image_gallery[0]}
+                                                alt={`${product.name} main image`}
                                                 className="w-full h-full object-cover"
                                             />
                                         </button>
-                                    ))}
-                                </div>
-                            )}
+
+                                        {product.image_gallery.slice(1).map((image, index) => (
+                                            <button
+                                                key={index + 1}
+                                                onClick={() => setSelectedImageIndex(index + 1)}
+                                                className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImageIndex === index + 1 ? 'border-orange-500' : 'border-gray-200'}`}
+                                            >
+                                                <img
+                                                    src={image}
+                                                    alt={`${product.name} view ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Product Info */}
@@ -111,7 +112,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                                         {renderStars(product.rating || 0)}
                                     </div>
                                     <span className="text-sm text-gray-600">
-                                        {product.reviewCount || 0} reviews
+                                        {product.reviewCount || 0} {t('reviews')}
                                     </span>
                                 </div>
 
@@ -123,7 +124,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                                 {/* Quantity & Price */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">QUANTITY</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('quantity')}</label>
                                         <div className="flex items-center border border-gray-300 rounded-md w-24">
                                             <button onClick={() => handleQuantityChange(-1)} className="px-3 py-2 text-gray-600 hover:text-gray-800">-</button>
                                             <span className="px-3 py-2 text-center flex-1">{quantity}</span>
@@ -131,18 +132,17 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">PRICE</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('price')}</label>
                                         <div className="text-2xl font-bold text-gray-900">
                                             ${totalPrice.toFixed(2)}
                                         </div>
                                     </div>
                                 </div>
 
-
                                 {/* Buttons */}
                                 <div className="flex space-x-4">
-                                    <button className="flex-1 border border-orange-600 text-orange-600 px-6 py-3 rounded-md hover:bg-orange-50 transition-colors">ADD TO CART</button>
-                                    <button className="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">BUY NOW</button>
+                                    <button className="flex-1 border border-orange-600 text-orange-600 px-6 py-3 rounded-md hover:bg-orange-50 transition-colors">{t('addToCart')}</button>
+                                    <button className="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">{t('buyNow')}</button>
                                 </div>
                             </div>
                         </div>
@@ -152,8 +152,8 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                     <div className="bg-white shadow-sm sm:rounded-lg mt-8">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-semibold text-gray-900">Reviews:</h3>
-                                <button className="text-orange-600 hover:text-orange-700 font-medium">+ Leave Feedback</button>
+                                <h3 className="text-xl font-semibold text-gray-900">{t('reviews')}:</h3>
+                                <button className="text-orange-600 hover:text-orange-700 font-medium">+ {t('leaveFeedback')}</button>
                             </div>
 
                             <div className="space-y-6">
@@ -181,7 +181,7 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                     {/* Related Products */}
                     <div className="bg-white shadow-sm sm:rounded-lg mt-8">
                         <div className="p-6">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-6">You may also like:</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-6">{t('youMayAlsoLike')}:</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {relatedProducts.map((relatedProduct) => (
                                     <Link href={route('products.show', relatedProduct.id)} key={relatedProduct.id} className="group">

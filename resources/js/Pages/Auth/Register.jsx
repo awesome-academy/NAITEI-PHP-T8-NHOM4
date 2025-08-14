@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -15,6 +16,8 @@ export default function Register() {
         password: '',
         password_confirmation: '',
     });
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         return () => {
@@ -29,21 +32,21 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title={t('register_title', 'Register')} />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                Create Account
+                                {t('create_account', 'Create Account')}
                             </h2>
-                            <p className="text-gray-600">Join us today and get started</p>
+                            <p className="text-gray-600">{t('join_us_today', 'Join us today and get started')}</p>
                         </div>
 
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="username" value="Username" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="username" value={t('username', 'Username')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="username"
                                     name="username"
@@ -59,7 +62,7 @@ export default function Register() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <InputLabel htmlFor="fname" value="First Name" className="text-sm font-medium text-gray-700" />
+                                    <InputLabel htmlFor="fname" value={t('first_name', 'First Name')} className="text-sm font-medium text-gray-700" />
                                     <TextInput
                                         id="fname"
                                         name="fname"
@@ -73,7 +76,7 @@ export default function Register() {
                                 </div>
 
                                 <div>
-                                    <InputLabel htmlFor="lname" value="Last Name" className="text-sm font-medium text-gray-700" />
+                                    <InputLabel htmlFor="lname" value={t('last_name', 'Last Name')} className="text-sm font-medium text-gray-700" />
                                     <TextInput
                                         id="lname"
                                         name="lname"
@@ -88,7 +91,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="email" value="Email" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="email" value={t('email', 'Email')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="email"
                                     type="email"
@@ -103,7 +106,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password" value="Password" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="password" value={t('password', 'Password')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -118,7 +121,7 @@ export default function Register() {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password_confirmation" value="Confirm Password" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="password_confirmation" value={t('confirm_password', 'Confirm Password')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="password_confirmation"
                                     type="password"
@@ -137,14 +140,14 @@ export default function Register() {
                                     href={route('login')}
                                     className="text-sm text-indigo-600 hover:text-indigo-500 font-medium transition duration-200"
                                 >
-                                    Already registered?
+                                    {t('already_registered', 'Already registered?')}
                                 </Link>
 
                                 <PrimaryButton 
                                     className="ml-4 bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 px-8 py-3 rounded-lg font-medium transition duration-200" 
                                     disabled={processing}
                                 >
-                                    {processing ? 'Creating...' : 'Register'}
+                                    {processing ? t('creating', 'Creating...') : t('register', 'Register')}
                                 </PrimaryButton>
                             </div>
                         </form>

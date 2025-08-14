@@ -1,4 +1,5 @@
 import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 
 export default function StatCard({ 
     title, 
@@ -8,6 +9,8 @@ export default function StatCard({
     trend = null, 
     trendUp = true 
 }) {
+    const { t } = useTranslation();
+
     const colorClasses = {
         green: 'bg-green-100 text-green-800',
         blue: 'bg-blue-100 text-blue-800',
@@ -28,7 +31,7 @@ export default function StatCard({
         <div className="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
                 <div className="flex-1">
-                    <p className="text-sm text-gray-600 mb-1">{title}</p>
+                    <p className="text-sm text-gray-600 mb-1">{t(title)}</p>
                     <p className="text-2xl font-bold text-gray-900">{value}</p>
                     
                     {trend && (
@@ -38,12 +41,16 @@ export default function StatCard({
                             ) : (
                                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
                             )}
-                            <span className={`text-sm font-medium ${
-                                trendUp ? 'text-green-600' : 'text-red-600'
-                            }`}>
+                            <span
+                                className={`text-sm font-medium ${
+                                    trendUp ? 'text-green-600' : 'text-red-600'
+                                }`}
+                            >
                                 {trend}
                             </span>
-                            <span className="text-sm text-gray-500 ml-1">vs last month</span>
+                            <span className="text-sm text-gray-500 ml-1">
+                                {t('vs_last_month')}
+                            </span>
                         </div>
                     )}
                 </div>
