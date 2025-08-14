@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { 
     ChevronUpIcon, 
     ChevronDownIcon,
@@ -10,27 +10,64 @@ import {
     FunnelIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
+import Pagination from './Pagination';
+import PerPageSelector from './PerPageSelector';
 
 export default function DataTable({ 
     columns = [], 
     data = [], 
+    pagination = null,
     searchable = true,
     sortable = true,
     actions = true,
     filterable = false,
     filterColumn = null,
+    filterOptions = [], 
     onView = null,
     onEdit = null,
     onDelete = null,
-    className = ''
+    deleteCondition = null,
+    className = '',
+    filters = {}
 }) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-    const [selectedCategories, setSelectedCategories] = useState([]);
-    const [tempSelectedCategories, setTempSelectedCategories] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [sortConfig, setSortConfig] = useState({ 
+        key: filters.sort || null, 
+        direction: filters.direction || 'asc' 
+    });
+    const [selectedCategories, setSelectedCategories] = useState(
+        filters.category ? filters.category.split(',') : []
+    );
+    const [tempSelectedCategories, setTempSelectedCategories] = useState(
+        filters.category ? filters.category.split(',') : []
+    );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [categorySearchTerm, setCategorySearchTerm] = useState('');
     const dropdownRef = useRef(null);
+
+    // Debounce search
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (pagination) {
+                // Server-side search - preserve current URL params
+                const currentParams = new URLSearchParams(window.location.search);
+                if (searchTerm) {
+                    currentParams.set('search', searchTerm);
+                } else {
+                    currentParams.delete('search');
+                }
+                currentParams.set('page', '1'); // Reset to first page when searching
+                
+                router.get(window.location.pathname, Object.fromEntries(currentParams), {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                });
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -51,11 +88,14 @@ export default function DataTable({
     }, [selectedCategories]);
 
     // Get unique categories for filter dropdown
-    const filterOptions = filterable && filterColumn ? 
-        [...new Set(data.map(item => item[filterColumn]).filter(Boolean))] : [];
+    const defaultFilterOptions = filterable && filterColumn && filterOptions.length === 0 && !pagination
+        ? [...new Set(data.map(item => item[filterColumn]).filter(Boolean))] : [];
+    
+    // Use external filterOptions if provided, otherwise use categories from data
+    const availableFilterOptions = Array.isArray(filterOptions) && filterOptions.length > 0 ? filterOptions : defaultFilterOptions;
     
     // Filter categories based on search term
-    const filteredCategories = filterOptions.filter(category =>
+    const filteredCategories = availableFilterOptions.filter(category =>
         category.toLowerCase().includes(categorySearchTerm.toLowerCase())
     );
 
@@ -72,6 +112,22 @@ export default function DataTable({
         setSelectedCategories([...tempSelectedCategories]);
         setIsDropdownOpen(false);
         setCategorySearchTerm('');
+        
+        if (pagination) {
+            const currentParams = new URLSearchParams(window.location.search);
+            if (tempSelectedCategories.length > 0) {
+                currentParams.set('category', tempSelectedCategories.join(','));
+            } else {
+                currentParams.delete('category');
+            }
+            currentParams.set('page', '1');
+            
+            router.get(window.location.pathname, Object.fromEntries(currentParams), {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }
     };
 
     const clearFilter = () => {
@@ -79,12 +135,40 @@ export default function DataTable({
         setTempSelectedCategories([]);
         setIsDropdownOpen(false);
         setCategorySearchTerm('');
+        
+        if (pagination) {
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.delete('category');
+            currentParams.set('page', '1');
+            
+            router.get(window.location.pathname, Object.fromEntries(currentParams), {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }
     };
 
     const removeCategory = (category) => {
         const newCategories = selectedCategories.filter(cat => cat !== category);
         setSelectedCategories(newCategories);
         setTempSelectedCategories(newCategories);
+        
+        if (pagination) {
+            const currentParams = new URLSearchParams(window.location.search);
+            if (newCategories.length > 0) {
+                currentParams.set('category', newCategories.join(','));
+            } else {
+                currentParams.delete('category');
+            }
+            currentParams.set('page', '1');
+            
+            router.get(window.location.pathname, Object.fromEntries(currentParams), {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }
     };
 
     const selectAllFilteredCategories = () => {
@@ -97,32 +181,6 @@ export default function DataTable({
         );
     };
 
-    // Filter data based on search term and category filter
-    const filteredData = data.filter(item => {
-        // Search filter
-        const matchesSearch = !searchable || !searchTerm || 
-            columns.some(column => {
-                const value = item[column.key];
-                return value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
-            });
-
-        // Category filter - if no categories selected, show all
-        const matchesCategory = !filterable || selectedCategories.length === 0 || 
-            selectedCategories.includes(item[filterColumn]);
-
-        return matchesSearch && matchesCategory;
-    });
-
-    // Sort data
-    const sortedData = sortable && sortConfig.key ? [...filteredData].sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-        
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-    }) : filteredData;
-
     const handleSort = (key) => {
         if (!sortable) return;
         
@@ -131,6 +189,20 @@ export default function DataTable({
             direction = 'desc';
         }
         setSortConfig({ key, direction });
+
+        // Handle server-side sorting
+        if (pagination) {
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.set('sort', key);
+            currentParams.set('direction', direction);
+            currentParams.set('page', '1'); // Reset to first page when sorting
+            
+            router.get(window.location.pathname, Object.fromEntries(currentParams), {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }
     };
 
     const renderSortIcon = (columnKey) => {
@@ -144,28 +216,34 @@ export default function DataTable({
 
     return (
         <div className={`bg-white rounded-lg shadow ${className}`}>
-            {/* Search Bar and Filter */}
-            {(searchable || filterable) && (
+            {/* Header with Search, Filter, and Per Page */}
+            {(searchable || filterable || pagination) && (
                 <div className="p-4 border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        {/* Search Bar - Left */}
-                        {searchable && (
-                            <div className="relative max-w-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                        {/* Left side - Search and Per Page */}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            {searchable && (
+                                <div className="relative max-w-sm">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Search..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
                                 </div>
-                                <input
-                                    type="text"
-                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Search..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                        )}
+                            )}
+                            
+                            {pagination && (
+                                <PerPageSelector current={pagination.per_page} />
+                            )}
+                        </div>
 
-                        {/* Category Filter - Right */}
-                        {filterable && filterOptions.length > 0 && (
+                        {/* Right side - Category Filter */}
+                        {filterable && Array.isArray(availableFilterOptions) && availableFilterOptions.length > 0 && (
                             <div className="space-y-3">
                                 {/* Dropdown */}
                                 <div className="relative" ref={dropdownRef}>
@@ -310,7 +388,7 @@ export default function DataTable({
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {sortedData.map((item, index) => (
+                        {data.map((item, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 {columns.map((column) => (
                                     <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -338,7 +416,7 @@ export default function DataTable({
                                                     <PencilIcon className="h-4 w-4" />
                                                 </button>
                                             )}
-                                            {onDelete && (
+                                            {onDelete && (!deleteCondition || deleteCondition(item)) && (
                                                 <button
                                                     onClick={() => onDelete(item)}
                                                     className="text-red-600 hover:text-red-900 p-1"
@@ -357,11 +435,14 @@ export default function DataTable({
             </div>
 
             {/* No Data Message */}
-            {sortedData.length === 0 && (
+            {data.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                    {searchTerm || selectedCategories.length > 0 ? 'No matching records found.' : 'No data available.'}
+                    No data available.
                 </div>
             )}
+
+            {/* Pagination */}
+            {pagination && <Pagination pagination={pagination} />}
         </div>
     );
 }

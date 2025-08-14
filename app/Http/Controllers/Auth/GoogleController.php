@@ -41,7 +41,7 @@ class GoogleController extends Controller
                     'fname' => $fname,
                     'lname' => $lname,
                     'username' => $username,
-                    'role_id' => ROLE::USER,,
+                    'role_id' => ROLE::USER,
                 ]);
             } elseif (!$user->google_id) {
                 // Link account if user registered earlier
