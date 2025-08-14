@@ -3,18 +3,21 @@ import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
 import DataTable from '@/Components/Admin/DataTable';
 import { HomeIcon, PlusIcon, EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductsIndex({ auth, products = [] }) {
+    const { t } = useTranslation();
+
     const breadcrumbs = [
-        { label: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
-        { label: 'Products' }
+        { label: t('dashboard'), href: '/admin/dashboard', icon: HomeIcon },
+        { label: t('products') }
     ];
 
     const actions = [
         {
             type: 'link',
             href: '/admin/products/create',
-            label: 'Add Product',
+            label: t('add_product'),
             icon: PlusIcon
         }
     ];
@@ -28,13 +31,13 @@ export default function ProductsIndex({ auth, products = [] }) {
     };
 
     const handleDelete = (product) => {
-        if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
+        if (confirm(t('delete_confirm', { name: product.name }))) {
             router.delete(`/admin/products/${product.id}`, {
                 onSuccess: () => {
                     // Optional: Add success notification
                 },
                 onError: () => {
-                    alert('Error deleting product');
+                    alert(t('delete_error'));
                 }
             });
         }
@@ -43,19 +46,19 @@ export default function ProductsIndex({ auth, products = [] }) {
     const columns = [
         {
             key: 'id',
-            label: 'ID',
+            label: t('id'),
             render: (value, item) => (
                 <span className="font-mono text-sm">#{value}</span>
             )
         },
         {
             key: 'name',
-            label: 'Product',
+            label: t('product'),
             render: (value, item) => (
                 <div className="flex items-center space-x-3">
                     {item.image && (
                         <img 
-                            src={`/storage/${item.image}`} 
+                            src={`/${item.image}`} 
                             alt={value}
                             className="w-10 h-10 object-cover rounded-md border"
                         />
@@ -66,21 +69,21 @@ export default function ProductsIndex({ auth, products = [] }) {
         },
         {
             key: 'category',
-            label: 'Category',
+            label: t('category'),
             render: (value) => (
                 <span className="text-gray-900">{value}</span>
             )
         },
         {
             key: 'price',
-            label: 'Price',
+            label: t('price'),
             render: (value) => (
                 <span className="font-semibold text-green-600">{value}</span>
             )
         },
         {
             key: 'stock',
-            label: 'Stock',
+            label: t('stock'),
             render: (value) => (
                 <span className={`font-medium ${
                     value > 0 ? 'text-green-600' : 'text-red-600'
@@ -91,17 +94,17 @@ export default function ProductsIndex({ auth, products = [] }) {
         },
         {
             key: 'created_at',
-            label: 'Created'
+            label: t('created')
         }
     ];
 
     return (
         <AdminLayout user={auth.user}>
-            <Head title="Products Management" />
+            <Head title={t('products_management')} />
 
             <PageHeader
-                title="Products Management"
-                subtitle="Manage your product catalog"
+                title={t('products_management')}
+                subtitle={t('products_management_subtitle')}
                 breadcrumbs={breadcrumbs}
                 actions={actions}
             />

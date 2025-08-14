@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import Layout from '@/Layouts/UserLayout';
 import ProductGrid from '@/Components/User/ProductGrid';
 import ProductFilters from '@/Components/User/ProductFilters';
@@ -13,6 +14,8 @@ export default function ProductsIndex({
     filters, 
     totalCount 
 }) {
+    const { t } = useTranslation();
+
     const decodeLabel = (label) => {
         if (label.includes('&laquo;')) return '«';
         if (label.includes('&raquo;')) return '»';
@@ -26,7 +29,6 @@ export default function ProductsIndex({
         const updatedFilters = { ...activeFilters, ...newFilters };
         setActiveFilters(updatedFilters);
         
-        // Remove empty filters
         Object.keys(updatedFilters).forEach(key => {
             if (!updatedFilters[key] || (Array.isArray(updatedFilters[key]) && updatedFilters[key].length === 0)) {
                 delete updatedFilters[key];
@@ -50,7 +52,7 @@ export default function ProductsIndex({
 
     return (
         <Layout>
-            <Head title="Shop - All Products" />
+            <Head title={t('shop_all_products')} />
             
             <div className="min-h-screen bg-white">
                 {/* Main Content */}
@@ -76,7 +78,7 @@ export default function ProductsIndex({
                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                                 </svg>
-                                Filters
+                                {t('filters')}
                             </button>
                         </div>
 
@@ -86,7 +88,7 @@ export default function ProductsIndex({
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                                 <div className="mb-4 sm:mb-0">
                                     <p className="text-gray-600">
-                                        Showing {products.from || 0} of {products.total} Products
+                                        {t('showing_results', { from: products.from || 0, total: products.total })}
                                     </p>
                                 </div>
                                 
@@ -133,7 +135,7 @@ export default function ProductsIndex({
                         <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsMobileFiltersOpen(false)} />
                         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-xl">
                             <div className="flex items-center justify-between px-4 py-3 border-b">
-                                <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+                                <h2 className="text-lg font-medium text-gray-900">{t('filters')}</h2>
                                 <button
                                     onClick={() => setIsMobileFiltersOpen(false)}
                                     className="text-gray-400 hover:text-gray-500"

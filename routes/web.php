@@ -19,10 +19,10 @@ use App\Http\Controllers\ProductController;
 |
 */
 
-Route::get('lang/{lang}', [LanguageController::class, 'changeLang'])->name('lang.change');
-
 Route::middleware(Localization::class)->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+
+    Route::get('lang/{lang}', [LanguageController::class, 'changeLang'])->name('lang.change');
 
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');

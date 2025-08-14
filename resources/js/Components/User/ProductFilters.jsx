@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductFilters({
     categories,
@@ -7,6 +8,8 @@ export default function ProductFilters({
     onFilterChange,
     onClearFilters
 }) {
+    const { t } = useTranslation();
+
     const [localPriceRange, setLocalPriceRange] = useState({
         min: activeFilters.min_price || priceRange.min || 0,
         max: activeFilters.max_price || priceRange.max || 1000
@@ -41,7 +44,7 @@ export default function ProductFilters({
         <div className="space-y-8">
             {/* Categories Filter */}
             <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">CATEGORIES</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t('categories_title')}</h3>
                 <div className="space-y-3">
                     {categories.map((category) => (
                         <label key={category} className="flex items-center">
@@ -51,7 +54,9 @@ export default function ProductFilters({
                                 onChange={() => handleCategoryChange(category)}
                                 className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
                             />
-                            <span className="ml-3 text-gray-700">{category}</span>
+                            <span className="ml-3 text-gray-700">
+                                {t(`categories.${category}`)}
+                            </span>
                         </label>
                     ))}
                 </div>
@@ -59,15 +64,15 @@ export default function ProductFilters({
 
             {/* Price Filter */}
             <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">PRICE</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t('price')}</h3>
                 <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <span>Price Range:</span>
+                        <span>{t('price_range')}:</span>
                         <span>${localPriceRange.min} - ${localPriceRange.max}</span>
                     </div>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-sm text-gray-600 mb-1">Min Price</label>
+                            <label className="block text-sm text-gray-600 mb-1">{t('min_price')}</label>
                             <input
                                 type="range"
                                 min={priceRange.min}
@@ -79,7 +84,7 @@ export default function ProductFilters({
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-gray-600 mb-1">Max Price</label>
+                            <label className="block text-sm text-gray-600 mb-1">{t('max_price')}</label>
                             <input
                                 type="range"
                                 min={priceRange.min}
@@ -94,7 +99,7 @@ export default function ProductFilters({
                     <div className="flex space-x-2">
                         <input
                             type="number"
-                            placeholder="Min"
+                            placeholder={t('min')}
                             value={localPriceRange.min}
                             onChange={(e) => setLocalPriceRange(prev => ({ ...prev, min: parseInt(e.target.value) || 0 }))}
                             onBlur={handlePriceRangeChange}
@@ -102,7 +107,7 @@ export default function ProductFilters({
                         />
                         <input
                             type="number"
-                            placeholder="Max"
+                            placeholder={t('max')}
                             value={localPriceRange.max}
                             onChange={(e) => setLocalPriceRange(prev => ({ ...prev, max: parseInt(e.target.value) || 1000 }))}
                             onBlur={handlePriceRangeChange}
@@ -114,7 +119,7 @@ export default function ProductFilters({
 
             {/* Availability Filter */}
             <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">AVAILABILITY</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t('availability')}</h3>
                 <div className="space-y-3">
                     <label className="flex items-center">
                         <input
@@ -123,7 +128,7 @@ export default function ProductFilters({
                             onChange={() => handleAvailabilityChange('in_stock')}
                             className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
                         />
-                        <span className="ml-3 text-gray-700">In Stock</span>
+                        <span className="ml-3 text-gray-700">{t('in_stock')}</span>
                     </label>
                     <label className="flex items-center">
                         <input
@@ -132,7 +137,7 @@ export default function ProductFilters({
                             onChange={() => handleAvailabilityChange('out_of_stock')}
                             className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
                         />
-                        <span className="ml-3 text-gray-700">Out of Stock</span>
+                        <span className="ml-3 text-gray-700">{t('out_of_stock')}</span>
                     </label>
                 </div>
             </div>
@@ -144,7 +149,7 @@ export default function ProductFilters({
                         onClick={onClearFilters}
                         className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition-colors font-medium"
                     >
-                        Clear All Filters
+                        {t('clear_all_filters')}
                     </button>
                 </div>
             )}

@@ -3,13 +3,15 @@ import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { HomeIcon, ArrowLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductShow({ auth, product }) {
+    const { t } = useTranslation();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const breadcrumbs = [
-        { label: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
-        { label: 'Products', href: '/admin/products' },
+        { label: t('dashboard'), href: '/admin/dashboard', icon: HomeIcon },
+        { label: t('products'), href: '/admin/products' },
         { label: product.name }
     ];
 
@@ -17,28 +19,28 @@ export default function ProductShow({ auth, product }) {
         {
             type: 'link',
             href: '/admin/products',
-            label: 'Back to Products',
+            label: t('back_to_products'),
             icon: ArrowLeftIcon,
             className: 'bg-gray-600 hover:bg-gray-700'
         },
         {
             type: 'link',
             href: `/admin/products/${product.id}/edit`,
-            label: 'Edit Product',
+            label: t('edit_product'),
             icon: PencilIcon
         }
     ];
 
     const getStatusBadge = () => {
-        let status = 'active';
+        let status = 'active'; 
         let statusText = 'Active';
         
         if (product.stock_quantity === 0) {
             status = 'out_of_stock';
-            statusText = 'Out of Stock';
+            statusText = t('out_of_stock');
         } else if (product.stock_quantity > 0) {
             status = 'active';
-            statusText = 'In Stock';
+            statusText = t('in_stock');
         }
 
         const statusClasses = {
@@ -64,11 +66,11 @@ export default function ProductShow({ auth, product }) {
 
     return (
         <AdminLayout user={auth.user}>
-            <Head title={`Product: ${product.name}`} />
+            <Head title={`${t('product')}: ${product.name}`} />
 
             <PageHeader
                 title={product.name}
-                subtitle="Product Details"
+                subtitle={t('product_details')}
                 breadcrumbs={breadcrumbs}
                 actions={actions}
             />
@@ -79,43 +81,43 @@ export default function ProductShow({ auth, product }) {
                     {/* Product Information Card */}
                     <div className="bg-white rounded-lg shadow overflow-hidden">
                         <div className="px-6 py-4 bg-gray-50 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">Product Information</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{t('product_information')}</h3>
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Product Name</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('product_name')}</label>
                                     <p className="text-lg font-semibold text-gray-900">{product.name}</p>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Category</label>
-                                    <p className="text-gray-900">{product.category?.name || 'Uncategorized'}</p>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('category')}</label>
+                                    <p className="text-gray-900">{product.category?.name || t('uncategorized')}</p>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('status')}</label>
                                     <div>{getStatusBadge()}</div>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Price</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('price')}</label>
                                     <p className="text-2xl font-bold text-green-600">${product.price}</p>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Stock Quantity</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('stock_quantity')}</label>
                                     <p className={`text-lg font-semibold ${
                                         product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'
                                     }`}>
-                                        {product.stock_quantity} units
+                                        {product.stock_quantity} {t('units')}
                                     </p>
                                 </div>
                             </div>
                             
                             {product.description && (
                                 <div className="mt-6">
-                                    <label className="block text-sm font-medium text-gray-500 mb-2">Description</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-2">{t('description')}</label>
                                     <div className="bg-gray-50 rounded-lg p-4">
                                         <p className="text-gray-900 whitespace-pre-wrap">{product.description}</p>
                                     </div>
@@ -127,22 +129,22 @@ export default function ProductShow({ auth, product }) {
                     {/* Metadata Card */}
                     <div className="bg-white rounded-lg shadow overflow-hidden">
                         <div className="px-6 py-4 bg-gray-50 border-b">
-                            <h3 className="text-lg font-semibold text-gray-900">Metadata</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{t('metadata')}</h3>
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Created At</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('created_at')}</label>
                                     <p className="text-gray-900">{new Date(product.created_at).toLocaleDateString()}</p>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Updated At</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('updated_at')}</label>
                                     <p className="text-gray-900">{new Date(product.updated_at).toLocaleDateString()}</p>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Product ID</label>
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">{t('product_id')}</label>
                                     <p className="text-gray-900 font-mono">#{product.id}</p>
                                 </div>
                             </div>
@@ -154,7 +156,7 @@ export default function ProductShow({ auth, product }) {
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <div className="px-6 py-4 bg-gray-50 border-b">
                                 <h3 className="text-lg font-semibold text-gray-900">
-                                    Product Images ({product.images.length})
+                                    {t('product_images')} ({product.images.length})
                                 </h3>
                             </div>
                             <div className="p-6">
@@ -163,7 +165,7 @@ export default function ProductShow({ auth, product }) {
                                         <div key={image.id} className="relative group">
                                             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                                                 <img 
-                                                    src={`/storage/${image.image_path}`} 
+                                                    src={`/${image.image_path}`} 
                                                     alt={image.alt_text || `${product.name} ${index + 1}`}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                                 />
@@ -181,7 +183,7 @@ export default function ProductShow({ auth, product }) {
                     ) : (
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <div className="px-6 py-4 bg-gray-50 border-b">
-                                <h3 className="text-lg font-semibold text-gray-900">Product Images</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">{t('product_images')}</h3>
                             </div>
                             <div className="p-6">
                                 <div className="text-center py-12">
@@ -190,13 +192,13 @@ export default function ProductShow({ auth, product }) {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <h3 className="mt-4 text-lg font-medium text-gray-900">No images uploaded</h3>
-                                    <p className="mt-2 text-gray-500">This product doesn't have any images yet.</p>
+                                    <h3 className="mt-4 text-lg font-medium text-gray-900">{t('no_images_uploaded')}</h3>
+                                    <p className="mt-2 text-gray-500">{t('no_images_description')}</p>
                                     <Link
                                         href={`/admin/products/${product.id}/edit`}
                                         className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                                     >
-                                        Add Images
+                                        {t('add_images')}
                                     </Link>
                                 </div>
                             </div>
@@ -205,14 +207,14 @@ export default function ProductShow({ auth, product }) {
 
                     {/* Quick Actions */}
                     <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('quick_actions')}</h3>
                         <div className="flex flex-wrap gap-3">
                             <Link
                                 href={`/admin/products/${product.id}/edit`}
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <PencilIcon className="h-4 w-4 mr-2" />
-                                Edit Product
+                                {t('edit_product')}
                             </Link>
                             
                             <button 
@@ -220,7 +222,7 @@ export default function ProductShow({ auth, product }) {
                                 className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                             >
                                 <TrashIcon className="h-4 w-4 mr-2" />
-                                Delete Product
+                                {t('delete_product')}
                             </button>
                         </div>
                     </div>
@@ -235,11 +237,10 @@ export default function ProductShow({ auth, product }) {
                             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                                 <TrashIcon className="h-6 w-6 text-red-600" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 mt-4">Delete Product</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mt-4">{t('delete_product')}</h3>
                             <div className="mt-2 px-7 py-3">
                                 <p className="text-sm text-gray-500">
-                                    Are you sure you want to delete "<strong>{product.name}</strong>"? 
-                                    This action cannot be undone and will also delete all associated images.
+                                    {t('delete_confirmation', { name: product.name })}
                                 </p>
                             </div>
                             <div className="items-center px-4 py-3">
@@ -247,13 +248,13 @@ export default function ProductShow({ auth, product }) {
                                     onClick={handleDelete}
                                     className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2"
                                 >
-                                    Delete Product
+                                    {t('delete_product')}
                                 </button>
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
                                     className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                             </div>
                         </div>

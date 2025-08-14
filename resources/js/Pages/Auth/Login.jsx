@@ -6,6 +6,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -13,6 +14,8 @@ export default function Login({ status, canResetPassword }) {
         password: '',
         remember: false,
     });
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         return () => {
@@ -27,16 +30,16 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title={t('login_title', 'Log in')} />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                Welcome Back
+                                {t('welcome_back', 'Welcome Back')}
                             </h2>
-                            <p className="text-gray-600">Sign in to your account</p>
+                            <p className="text-gray-600">{t('sign_in_to_account', 'Sign in to your account')}</p>
                         </div>
 
                         {status && (
@@ -47,7 +50,7 @@ export default function Login({ status, canResetPassword }) {
 
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="login" value="Username or Email" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="login" value={t('username_or_email', 'Username or Email')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="login"
                                     type="text"
@@ -64,7 +67,7 @@ export default function Login({ status, canResetPassword }) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password" value="Password" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="password" value={t('password', 'Password')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -87,7 +90,7 @@ export default function Login({ status, canResetPassword }) {
                                         onChange={(e) => setData('remember', e.target.checked)}
                                         className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
                                     />
-                                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                    <span className="ml-2 text-sm text-gray-600">{t('remember_me', 'Remember me')}</span>
                                 </label>
 
                                 {canResetPassword && (
@@ -95,7 +98,7 @@ export default function Login({ status, canResetPassword }) {
                                         href={route('password.request')}
                                         className="text-sm text-indigo-600 hover:text-indigo-500 font-medium transition duration-200"
                                     >
-                                        Forgot password?
+                                        {t('forgot_password', 'Forgot password?')}
                                     </Link>
                                 )}
                             </div>
@@ -105,16 +108,16 @@ export default function Login({ status, canResetPassword }) {
                                     className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 py-3 rounded-lg font-medium transition duration-200" 
                                     disabled={processing}
                                 >
-                                    {processing ? 'Signing in...' : 'Sign In'}
+                                    {processing ? t('signing_in', 'Signing in...') : t('sign_in', 'Sign In')}
                                 </PrimaryButton>
 
                                 <div className="text-center">
-                                    <span className="text-sm text-gray-600">Don't have an account? </span>
+                                    <span className="text-sm text-gray-600">{t('dont_have_account', "Don't have an account? ")} </span>
                                     <Link
                                         href={route('register')}
                                         className="text-sm text-indigo-600 hover:text-indigo-500 font-medium transition duration-200"
                                     >
-                                        Sign up
+                                        {t('sign_up', 'Sign up')}
                                     </Link>
                                 </div>
                             </div>

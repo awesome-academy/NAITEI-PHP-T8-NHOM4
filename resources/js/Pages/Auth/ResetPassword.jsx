@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 
 export default function ResetPassword({ token, email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -13,6 +14,8 @@ export default function ResetPassword({ token, email }) {
         password: '',
         password_confirmation: '',
     });
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         return () => {
@@ -27,23 +30,23 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title={t('reset_password_title', 'Reset Password')} />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                Set a New Password
+                                {t('set_new_password', 'Set a New Password')}
                             </h2>
                             <p className="text-gray-600">
-                                Please enter and confirm your new password below.
+                                {t('enter_confirm_new_password', 'Please enter and confirm your new password below.')}
                             </p>
                         </div>
 
                         <form onSubmit={submit} className="space-y-6">
                             <div>
-                                <InputLabel htmlFor="email" value="Email" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="email" value={t('email', 'Email')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="email"
                                     type="email"
@@ -57,7 +60,7 @@ export default function ResetPassword({ token, email }) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password" value="New Password" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="password" value={t('new_password', 'New Password')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="password"
                                     type="password"
@@ -74,7 +77,7 @@ export default function ResetPassword({ token, email }) {
                             </div>
 
                             <div>
-                                <InputLabel htmlFor="password_confirmation" value="Confirm New Password" className="text-sm font-medium text-gray-700" />
+                                <InputLabel htmlFor="password_confirmation" value={t('confirm_new_password', 'Confirm New Password')} className="text-sm font-medium text-gray-700" />
                                 <TextInput
                                     id="password_confirmation"
                                     type="password"
@@ -94,7 +97,7 @@ export default function ResetPassword({ token, email }) {
                                     className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 py-3 rounded-lg font-medium transition duration-200" 
                                     disabled={processing}
                                 >
-                                    {processing ? 'Resetting...' : 'Reset Password'}
+                                    {processing ? t('resetting', 'Resetting...') : t('reset_password', 'Reset Password')}
                                 </PrimaryButton>
                             </div>
                         </form>

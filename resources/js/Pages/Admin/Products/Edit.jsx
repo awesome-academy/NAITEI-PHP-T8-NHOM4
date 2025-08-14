@@ -4,12 +4,15 @@ import { useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { HomeIcon, ArrowLeftIcon, EyeIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductEdit({ auth, product, categories }) {
+    const { t } = useTranslation();
+
     const [selectedImages, setSelectedImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
 
-    const { data, setData, put, post, processing, errors, clearErrors } = useForm({
+    const { data, setData, post, processing, errors, clearErrors } = useForm({
         name: product.name || '',
         description: product.description || '',
         price: product.price || '',
@@ -22,58 +25,48 @@ export default function ProductEdit({ auth, product, categories }) {
         const files = Array.from(e.target.files);
         setSelectedImages(files);
         setData('images', files);
-
-        // Create preview URLs
-        const previews = files.map(file => URL.createObjectURL(file));
-        setImagePreviews(previews);
+        setImagePreviews(files.map(file => URL.createObjectURL(file)));
     };
 
     const removeNewImage = (index) => {
         const newSelectedImages = selectedImages.filter((_, i) => i !== index);
         const newPreviews = imagePreviews.filter((_, i) => i !== index);
-        
         setSelectedImages(newSelectedImages);
         setImagePreviews(newPreviews);
         setData('images', newSelectedImages);
-        
-        // Clean up the URL object
         URL.revokeObjectURL(imagePreviews[index]);
     };
 
-    
-
     const removeExistingImage = (imageId) => {
-        if (!confirm('Are you sure you want to delete this image?')) {
-            return;
-        }
+        if (!confirm(t('confirmDeleteImage'))) return;
 
         router.delete(`/admin/products/${product.id}/images/${imageId}`, {
             preserveScroll: true,
-            onError: (errors) => {
-                alert('Failed to delete image. Please try again.');
+            onError: () => {
+                alert(t('deleteImageFailed'));
             }
         });
     };
 
     const breadcrumbs = [
-        { label: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
-        { label: 'Products', href: '/admin/products' },
+        { label: t('dashboard'), href: '/admin/dashboard', icon: HomeIcon },
+        { label: t('products'), href: '/admin/products' },
         { label: product.name, href: `/admin/products/${product.id}` },
-        { label: 'Edit' }
+        { label: t('edit') }
     ];
 
     const actions = [
         {
             type: 'link',
             href: `/admin/products/${product.id}`,
-            label: 'View Product',
+            label: t('viewProduct'),
             icon: EyeIcon,
             className: 'bg-gray-600 hover:bg-gray-700'
         },
         {
             type: 'link',
             href: '/admin/products',
-            label: 'Back to Products',
+            label: t('backToProducts'),
             icon: ArrowLeftIcon,
             className: 'bg-gray-600 hover:bg-gray-700'
         }
@@ -82,26 +75,18 @@ export default function ProductEdit({ auth, product, categories }) {
     const submit = (e) => {
         e.preventDefault();
         clearErrors();
-        
-        // Always use post method with forceFormData for consistency
         post(route('admin.products.update', product.id), {
-            forceFormData: true,
-            onSuccess: () => {
-                // Redirect will be handled by the controller
-            },
-            onError: (errors) => {
-                console.log('Validation errors:', errors);
-            }
+            forceFormData: true
         });
     };
 
     return (
         <AdminLayout user={auth.user}>
-            <Head title={`Edit Product: ${product.name}`} />
+            <Head title={`${t('editProduct')}: ${product.name}`} />
 
             <PageHeader
-                title="Edit Product"
-                subtitle={`Editing: ${product.name}`}
+                title={t('editProduct')}
+                subtitle={`${t('editing')}: ${product.name}`}
                 breadcrumbs={breadcrumbs}
                 actions={actions}
             />
@@ -109,38 +94,36 @@ export default function ProductEdit({ auth, product, categories }) {
             <div className="p-6">
                 <div className="max-w-4xl mx-auto">
                     <form onSubmit={submit} className="space-y-6">
-                        {/* Main Information Card */}
+                        {/* Main Information */}
                         <div className="bg-white rounded-lg shadow overflow-hidden">
                             <div className="px-6 py-4 bg-gray-50 border-b">
-                                <h3 className="text-lg font-semibold text-gray-900">Product Information</h3>
-                                <p className="text-sm text-gray-600 mt-1">Update the basic information about this product.</p>
+                                <h3 className="text-lg font-semibold text-gray-900">{t('productInformation')}</h3>
+                                <p className="text-sm text-gray-600 mt-1">{t('updateProductInfo')}</p>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Product Name */}
+                                    {/* Name */}
                                     <div className="md:col-span-2">
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Product Name *
+                                            {t('productName')} *
                                         </label>
                                         <input
                                             type="text"
                                             id="name"
                                             value={data.name}
                                             onChange={(e) => setData('name', e.target.value)}
+                                            placeholder={t('enterProductName')}
                                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                                 errors.name ? 'border-red-300' : 'border-gray-300'
                                             }`}
-                                            placeholder="Enter product name"
                                         />
-                                        {errors.name && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                                        )}
+                                        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                                     </div>
-                                    
+
                                     {/* Category */}
                                     <div>
                                         <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Category *
+                                            {t('category')} *
                                         </label>
                                         <select
                                             id="category_id"
@@ -150,22 +133,20 @@ export default function ProductEdit({ auth, product, categories }) {
                                                 errors.category_id ? 'border-red-300' : 'border-gray-300'
                                             }`}
                                         >
-                                            <option value="">Select Category</option>
+                                            <option value="">{t('selectCategory')}</option>
                                             {categories.map((category) => (
                                                 <option key={category.id} value={category.id}>
                                                     {category.name}
                                                 </option>
                                             ))}
                                         </select>
-                                        {errors.category_id && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>
-                                        )}
+                                        {errors.category_id && <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>}
                                     </div>
 
                                     {/* Price */}
                                     <div>
                                         <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Price *
+                                            {t('price')} *
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -178,21 +159,19 @@ export default function ProductEdit({ auth, product, categories }) {
                                                 min="0"
                                                 value={data.price}
                                                 onChange={(e) => setData('price', e.target.value)}
+                                                placeholder="0.00"
                                                 className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                                     errors.price ? 'border-red-300' : 'border-gray-300'
                                                 }`}
-                                                placeholder="0.00"
                                             />
                                         </div>
-                                        {errors.price && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.price}</p>
-                                        )}
+                                        {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
                                     </div>
 
-                                    {/* Stock Quantity */}
+                                    {/* Stock */}
                                     <div>
                                         <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Stock Quantity *
+                                            {t('stockQuantity')} *
                                         </label>
                                         <input
                                             type="number"
@@ -200,31 +179,27 @@ export default function ProductEdit({ auth, product, categories }) {
                                             min="0"
                                             value={data.stock_quantity}
                                             onChange={(e) => setData('stock_quantity', e.target.value)}
+                                            placeholder="0"
                                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                                 errors.stock_quantity ? 'border-red-300' : 'border-gray-300'
                                             }`}
-                                            placeholder="0"
                                         />
-                                        {errors.stock_quantity && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.stock_quantity}</p>
-                                        )}
+                                        {errors.stock_quantity && <p className="mt-1 text-sm text-red-600">{errors.stock_quantity}</p>}
                                     </div>
 
-                                    {/* Images Management */}
+                                    {/* Images */}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Product Images
+                                            {t('productImages')}
                                         </label>
-                                        
-                                        {/* Current Images */}
-                                        {product.images && product.images.length > 0 && (
+                                        {product.images?.length > 0 && (
                                             <div className="mb-4">
-                                                <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2">{t('currentImages')}</h4>
                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                     {product.images.map((image) => (
                                                         <div key={image.id} className="relative group">
                                                             <img 
-                                                                src={`/storage/${image.image_path}`} 
+                                                                src={`/${image.image_path}`} 
                                                                 alt={image.alt_text}
                                                                 className="w-full h-32 object-cover rounded-lg border-2 border-gray-300"
                                                             />
@@ -241,10 +216,9 @@ export default function ProductEdit({ auth, product, categories }) {
                                             </div>
                                         )}
 
-                                        {/* Add New Images */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Add New Images
+                                                {t('addNewImages')}
                                             </label>
                                             <input
                                                 type="file"
@@ -260,19 +234,18 @@ export default function ProductEdit({ auth, product, categories }) {
                                                 <p key={key} className="mt-1 text-sm text-red-600">{errors[key]}</p>
                                             ))}
                                             <p className="mt-1 text-sm text-gray-500">
-                                                Accepted formats: JPEG, PNG, JPG, GIF, WEBP (Max: 2MB each). You can select multiple images.
+                                                {t('acceptedFormats')}
                                             </p>
 
-                                            {/* New Image Previews */}
                                             {imagePreviews.length > 0 && (
                                                 <div className="mt-4">
-                                                    <h4 className="text-sm font-medium text-gray-700 mb-2">New Images Preview:</h4>
+                                                    <h4 className="text-sm font-medium text-gray-700 mb-2">{t('newImagesPreview')}</h4>
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                         {imagePreviews.map((preview, index) => (
                                                             <div key={index} className="relative group">
                                                                 <img
                                                                     src={preview}
-                                                                    alt={`New Preview ${index + 1}`}
+                                                                    alt={`${t('newPreview')} ${index + 1}`}
                                                                     className="w-full h-32 object-cover rounded-lg border border-green-300"
                                                                 />
                                                                 <button
@@ -283,7 +256,7 @@ export default function ProductEdit({ auth, product, categories }) {
                                                                     <XMarkIcon className="h-4 w-4" />
                                                                 </button>
                                                                 <div className="absolute bottom-2 left-2">
-                                                                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">New</span>
+                                                                    <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">{t('new')}</span>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -296,38 +269,36 @@ export default function ProductEdit({ auth, product, categories }) {
                                     {/* Description */}
                                     <div className="md:col-span-2">
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Description
+                                            {t('description')}
                                         </label>
                                         <textarea
                                             id="description"
                                             rows={4}
                                             value={data.description}
                                             onChange={(e) => setData('description', e.target.value)}
+                                            placeholder={t('enterProductDescription')}
                                             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                                                 errors.description ? 'border-red-300' : 'border-gray-300'
                                             }`}
-                                            placeholder="Enter product description"
                                         />
-                                        {errors.description && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                                        )}
+                                        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Form Actions */}
+                        {/* Actions */}
                         <div className="bg-white rounded-lg shadow p-6">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-600">
-                                    <span className="text-red-500">*</span> Required fields
+                                    <span className="text-red-500">*</span> {t('requiredFields')}
                                 </div>
                                 <div className="flex space-x-3">
                                     <Link
                                         href={`/admin/products/${product.id}`}
                                         className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
-                                        Cancel
+                                        {t('cancel')}
                                     </Link>
                                     <button
                                         type="submit"
@@ -340,12 +311,12 @@ export default function ProductEdit({ auth, product, categories }) {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                Updating...
+                                                {t('updating')}
                                             </>
                                         ) : (
                                             <>
                                                 <CheckIcon className="h-4 w-4 mr-2" />
-                                                Update Product
+                                                {t('updateProduct')}
                                             </>
                                         )}
                                     </button>

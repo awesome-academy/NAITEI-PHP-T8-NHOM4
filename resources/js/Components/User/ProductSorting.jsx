@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductSorting({ currentSort, onSortChange }) {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
 
     const sortOptions = [
-        { value: 'created_at', label: 'Most Popular' },
-        { value: 'name', label: 'Name A-Z' },
-        { value: 'price_asc', label: 'Price: Low to High' },
-        { value: 'price_desc', label: 'Price: High to Low' },
-        { value: 'popular', label: 'Most Reviewed' },
-        { value: 'newest', label: 'Newest First' }
+        { value: 'created_at', label: t('most_popular') },
+        { value: 'name', label: t('name_a_z') },
+        { value: 'price_asc', label: t('price_low_high') },
+        { value: 'price_desc', label: t('price_high_low') },
+        { value: 'popular', label: t('most_reviewed') },
+        { value: 'newest', label: t('newest_first') }
     ];
 
-    const currentSortLabel = sortOptions.find(option => option.value === currentSort)?.label || 'Most Popular';
+    const currentSortLabel = sortOptions.find(option => option.value === currentSort)?.label || t('most_popular');
 
     const handleSortSelect = (sortValue) => {
         onSortChange(sortValue);
@@ -22,7 +24,7 @@ export default function ProductSorting({ currentSort, onSortChange }) {
     return (
         <div className="relative">
             <div className="flex items-center space-x-2">
-                <span className="text-gray-600 text-sm">Sort by:</span>
+                <span className="text-gray-600 text-sm">{t('sort_by')}:</span>
                 <div className="relative">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
