@@ -122,6 +122,17 @@ export default function Login({ status, canResetPassword }) {
                                 </div>
                             </div>
                         </form>
+                        <a href={route('auth.google.redirect')}
+                            className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition duration-200"
+                        >
+                            <svg className="w-5 h-5" viewBox="0 0 533.5 544.3">
+                                <path fill="#4285f4" d="M533.5 278.4c0-17.7-1.6-34.7-4.6-51.2H272v96.8h147.2c-6.3 34.3-25 63.4-53.3 83v68h85.9c50.3-46.4 81.7-114.8 81.7-196.6z"/>
+                                <path fill="#34a853" d="M272 544.3c72.3 0 133.1-23.9 177.5-64.8l-85.9-68c-23.9 16.1-54.3 25.7-91.6 25.7-70.5 0-130.2-47.6-151.6-111.4h-89.4v69.7C85.2 483.7 171.7 544.3 272 544.3z"/>
+                                <path fill="#fbbc04" d="M120.4 325.7c-9.3-27.9-9.3-57.8 0-85.7V170.3H31C-10.3 249.4-10.3 339.5 31 418.6l89.4-69z"/>
+                                <path fill="#ea4335" d="M272 107.2c39.4 0 74.8 13.6 102.7 40.2l77-77C403.1 24.4 344.3 0 272 0 171.7 0 85.2 60.6 31 170.3l89.4 69c21.4-63.8 81.1-111.4 151.6-111.4z"/>
+                            </svg>
+                            Sign in with Google
+                        </a>
                     </div>
                 </div>
             </div>
