@@ -1,11 +1,11 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import PageHeader from '@/Components/Admin/PageHeader';
 import DataTable from '@/Components/Admin/DataTable';
-import { HomeIcon, PlusIcon, EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
 
-export default function ProductsIndex({ auth, products = [] }) {
+export default function ProductsIndex({ auth, products = { data: [] }, filters = {}, categories = [] }) {
     const { t } = useTranslation();
 
     const breadcrumbs = [
@@ -57,8 +57,8 @@ export default function ProductsIndex({ auth, products = [] }) {
             render: (value, item) => (
                 <div className="flex items-center space-x-3">
                     {item.image && (
-                        <img 
-                            src={`/${item.image}`} 
+                        <img
+                            src={`/${item.image}`}
                             alt={value}
                             className="w-10 h-10 object-cover rounded-md border"
                         />
@@ -82,7 +82,7 @@ export default function ProductsIndex({ auth, products = [] }) {
             )
         },
         {
-            key: 'stock',
+            key: 'stock_quantity',
             label: t('stock'),
             render: (value) => (
                 <span className={`font-medium ${
@@ -112,12 +112,17 @@ export default function ProductsIndex({ auth, products = [] }) {
             <div className="p-6">
                 <DataTable
                     columns={columns}
-                    data={products}
+                    data={products.data || []}
+                    pagination={products}
+                    filters={filters}
                     filterable={true}
                     filterColumn="category"
+                    filterOptions={categories.map(category => category.name)}
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    searchable={true}
+                    sortable={true}
                 />
             </div>
         </AdminLayout>

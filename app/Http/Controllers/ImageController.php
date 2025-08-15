@@ -13,7 +13,23 @@ class ImageController extends Controller
         $uploadedImages = [];
         
         foreach ($images as $index => $image) {
-            $imagePath = $image->store($folder, 'public');
+            // Store in specific folder structure for products
+            if ($imageType === 'product') {
+                $directory = public_path("images/Products/{$pathId}");
+                
+                // Ensure directory exists
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                
+                $filename = time() . '_' . ($index + 1) . '.' . $image->getClientOriginalExtension();
+                $imagePath = rawurlencode("images/Products/{$pathId}/" . $filename);
+                
+                // Move the file to public directory
+                $image->move($directory, $filename);
+            } else {
+                $imagePath = $image->store($folder, 'public');
+            }
             
             $imageRecord = Image::create([
                 'image_type' => $imageType,
@@ -30,7 +46,23 @@ class ImageController extends Controller
 
     public function storeImage($imageType, $pathId, $image, $folder = 'general', $altText = 'Image')
     {
-        $imagePath = $image->store($folder, 'public');
+        // Store in specific folder structure for products
+        if ($imageType === 'product') {
+            $directory = public_path("images/Products/{$pathId}");
+            
+            // Ensure directory exists
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = rawurlencode("images/Products/{$pathId}/" . $filename);
+            
+            // Move the file to public directory
+            $image->move($directory, $filename);
+        } else {
+            $imagePath = $image->store($folder, 'public');
+        }
         
         return Image::create([
             'image_type' => $imageType,
@@ -48,9 +80,10 @@ class ImageController extends Controller
             $image = Image::findOrFail($imageId);
             \Log::info("Image found: {$image->id}");
 
-            // Delete image file from storage
-            if (Storage::disk('public')->exists($image->image_path)) {
-                Storage::disk('public')->delete($image->image_path);
+            // Delete image file from public directory
+            $filePath = public_path(rawurldecode($image->image_path));
+            if (file_exists($filePath)) {
+                unlink($filePath);
             }
             
             // Delete image record from database
@@ -74,12 +107,22 @@ class ImageController extends Controller
                       ->get();
         
         foreach ($images as $image) {
-            // Delete image file from storage
-            if (Storage::disk('public')->exists($image->image_path)) {
-                Storage::disk('public')->delete($image->image_path);
+            // Delete image file from public directory
+            $filePath = public_path(rawurldecode($image->image_path));
+            if (file_exists($filePath)) {
+                unlink($filePath);
             }
             // Delete image record from database
             $image->delete();
+        }
+        
+        // Delete the entire folder for products
+        if ($imageType === 'product') {
+            $folderPath = public_path("images/Products/{$pathId}");
+            if (is_dir($folderPath)) {
+                // Remove the directory if it's empty
+                @rmdir($folderPath);
+            }
         }
         
         return true;

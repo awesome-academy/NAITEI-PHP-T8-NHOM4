@@ -13,7 +13,7 @@ class ProductImagesSeeder extends Seeder
         $products = DB::table('products')->get();
 
         foreach ($products as $product) {
-            $folderPath = "public/images/Products/{$product->name}";
+            $folderPath = "public/images/Products/{$product->id}";
 
             if (!File::exists($folderPath)) {
                 continue;
@@ -25,7 +25,7 @@ class ProductImagesSeeder extends Seeder
                 DB::table('images')->insert([
                     'image_type' => 'product',
                     'path_id' => $product->id,
-                    'image_path' => rawurlencode("images/Products/{$product->name}/" . $file->getFilename()),
+                    'image_path' => rawurlencode("images/Products/{$product->id}/" . $file->getFilename()),
                     'alt_text' => $product->name,
                     'created_at' => now(),
                     'updated_at' => now(),
