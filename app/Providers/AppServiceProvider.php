@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia; // ← make sure to import this
+use App\Services\CartService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
                 return app()->getLocale();
             },
         ]);
+
+        Inertia::share('cart', function () {
+            return app(CartService::class)->getCartItems(2);
+        });
     }
 }
