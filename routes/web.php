@@ -8,6 +8,7 @@ use App\Http\Middleware\Localization;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\CartController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,4 +50,12 @@ Route::middleware(Localization::class)->group(function () {
     // Route::get('/user/{user}', [UserController::class, 'show'])
     //     ->middleware(['auth', 'can:view,user'])
     //     ->name('user.show');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        // Shopping Cart
+        Route::get('/cart/preview', [CartController::class, 'preview'])->name('cart.preview');
+
+        Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+        Route::post('/cart/save', [CartController::class, 'save'])->name('cart.save');
+    });
 });
