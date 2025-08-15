@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/react';
 import AdminSidebar from '@/Components/Admin/Sidebar/AdminSidebar';
 import AdminHeader from '@/Components/Admin/Header/AdminHeader';
 import BreadcrumbHistory from '@/Components/Admin/BreadcrumbHistory/BreadcrumbHistory';
+import { Toaster } from 'react-hot-toast'; // <-- 1. IMPORT
 
 export default function AdminLayout({ user, header, children, title = 'Admin Dashboard' }) {
     const [sidebarOpened, setSidebarOpened] = useState(true);
@@ -29,6 +30,9 @@ export default function AdminLayout({ user, header, children, title = 'Admin Das
             sidebarStatic ? 'sidebar-static' : ''
         } ${!sidebarOpened ? 'sidebar-close' : ''}`}>
             
+            {/* 2. THÊM COMPONENT TOASTER VÀO ĐÂY */}
+            <Toaster position="top-right" reverseOrder={false} />
+
             {/* Sidebar */}
             <AdminSidebar 
                 user={user}

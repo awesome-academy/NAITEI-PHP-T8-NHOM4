@@ -41,7 +41,7 @@ class GoogleController extends Controller
                     'fname' => $fname,
                     'lname' => $lname,
                     'username' => $username,
-                    'role_id' => ROLE::USER,,
+                    'role_id' => ROLE::USER,
                 ]);
             } elseif (!$user->google_id) {
                 // Link account if user registered earlier
@@ -51,7 +51,6 @@ class GoogleController extends Controller
             Auth::login($user, true);
 
             return redirect()->intended('/');
-
         } catch (\Exception $e) {
             return redirect()->route('login')->withErrors([
                 'oauth' => 'Google login failed. Please try again later.',

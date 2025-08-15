@@ -24,11 +24,24 @@ Route::prefix('admin')->middleware(['auth', 'can:is-admin'])->group(function () 
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
     Route::delete('/products/{product}/images/{image}', [ProductController::class, 'destroyProductImage'])->name('admin.products.images.destroy');
 
-    // Categories Management
-    Route::get('/categories', [AdminController::class, 'categories'])->name('admin.categories.index');
 
-    Route::get('/categories/create', [CategoryController::class, 'create'])->name('admin.categories.create'); // form
-    Route::post('/categories', [CategoryController::class, 'store'])->name('admin.categories.store');        // lưu
+    // Categories Management (Manual Routes)
+
+    Route::get('/categories', [CategoryController::class, 'index'])->name('admin.categories.index');
+
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('admin.categories.create');
+
+    Route::post('/categories', [CategoryController::class, 'store'])->name('admin.categories.store');
+
+    Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('admin.categories.show');
+
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('admin.categories.edit');
+
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('admin.categories.update');
+
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+
+
 
     // Orders Management
     Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders.index');

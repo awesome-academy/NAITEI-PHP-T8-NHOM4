@@ -1,12 +1,22 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react'; 
 import DataTable from '@/Components/Admin/DataTable';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { HomeIcon, PlusIcon, TagIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
 
+import { usePage } from '@inertiajs/react'; 
+import { useEffect } from 'react'; 
+import toast from 'react-hot-toast'; 
+
 export default function CategoriesIndex({ auth, categories = [] }) {
     const { t } = useTranslation();
+    const { flash } = usePage().props;
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+    }, [flash]);
 
     const columns = [
         {
@@ -22,7 +32,7 @@ export default function CategoriesIndex({ auth, categories = [] }) {
                     <div>
                         <div className="text-sm font-medium text-gray-900">{value}</div>
                         <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                            {item.description}
+                            {item.description || 'No description'}
                         </div>
                     </div>
                 </div>
@@ -39,9 +49,21 @@ export default function CategoriesIndex({ auth, categories = [] }) {
         },
     ];
 
-    const handleView = (item) => console.log(t('view'), item);
-    const handleEdit = (item) => console.log(t('edit'), item);
-    const handleDelete = (item) => console.log(t('delete'), item);
+    const handleView = (item) => {
+        router.get(route('admin.categories.show', item.id));
+    };
+
+    const handleEdit = (item) => {
+        router.get(route('admin.categories.edit', item.id));
+    };
+
+    const handleDelete = (item) => {
+        if (window.confirm('Are you sure you want to delete this category?')) {
+            router.delete(route('admin.categories.destroy', item.id), {
+                preserveScroll: true, 
+            });
+        }
+    };
 
     const breadcrumbs = [
         { label: t('dashboard'), href: route('admin.dashboard'), icon: HomeIcon },
