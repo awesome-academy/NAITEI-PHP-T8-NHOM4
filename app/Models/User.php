@@ -71,11 +71,6 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    public function feedbacks(): HasMany
-    {
-        return $this->hasMany(Feedback::class);
-    }
-
     public function images(): HasMany
     {
         return $this->hasMany(Image::class, 'path_id')->where('image_type', 'user');

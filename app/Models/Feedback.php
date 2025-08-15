@@ -14,8 +14,7 @@ class Feedback extends Model
     protected $table = 'feedbacks';
 
     protected $fillable = [
-        'user_id',
-        'product_id',
+        'order_detail_id',
         'rating',
         'feedback',
     ];
@@ -25,14 +24,9 @@ class Feedback extends Model
     ];
 
     // Relationships
-    public function user(): BelongsTo
+    public function orderDetail(): BelongsTo
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(OrderDetail::class);
     }
 
     public function images(): HasMany
