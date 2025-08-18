@@ -120,11 +120,6 @@ class AdminController extends Controller
         ]);
     }
 
-    public function orders()
-    {
-        return $this->dashboard();
-    }
-
     public function feedback()
     {
         return $this->dashboard();
