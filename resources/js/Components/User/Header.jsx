@@ -91,6 +91,12 @@ export default function Header() {
                                                 </strong>
                                             </div>
                                             <Link
+                                                href={route('orders.history')}
+                                                className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                {t('user.my_orders', 'My Orders')}
+                                            </Link>
+                                            <Link
                                                 href="/logout"
                                                 method="post"
                                                 as="button"

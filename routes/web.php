@@ -9,6 +9,7 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,9 @@ Route::middleware(Localization::class)->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/my-orders', [OrderController::class, 'history'])->name('orders.history');
+        Route::get('/my-orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     });
 
     // user route example
