@@ -12,9 +12,13 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'total_amount',
-        'status',
+        'user_id', 
+        'recipient_name', 
+        'recipient_phone',
+        'shipping_address', 
+        'total_amount', 
+        'status', 
+        'payment_method'
     ];
 
     protected $casts = [

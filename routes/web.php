@@ -9,6 +9,7 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\OrderController;
 
 /*
@@ -64,5 +65,8 @@ Route::middleware(Localization::class)->group(function () {
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
         Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
+
+        Route::get('/checkout', [BillingController::class, 'index'])->name('checkout.index');
+        Route::post('/checkout', [BillingController::class, 'store'])->name('checkout.store');
     });
 });
