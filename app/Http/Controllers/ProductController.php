@@ -132,7 +132,11 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'images', 'feedbacks.user'])->find($id);
+        $product = Product::with([
+            'category',
+            'images',
+            'feedbacks.orderDetail.order.user' // go deeper to reach the user
+        ])->find($id);
 
         if (!$product) {
             abort(404);
@@ -144,29 +148,25 @@ class ProductController extends Controller
             'category' => $product->category->name ?? null,
             'price' => (float) $product->price,
             'stock_quantity' => $product->stock_quantity,
-            'reviews_count' => $product->reviews_count ?? 0,
+            'reviews_count' => $product->feedbacks->count(),
             'created_at' => $product->created_at,
             'image_gallery' => $product->images && $product->images->count() > 0
-                ? $product->images->map(function ($image) {
-                    return asset($image->image_path);
-                })->values()->all()
+                ? $product->images->map(fn($image) => asset($image->image_path))->values()->all()
                 : [],
-            'feedback' => $product->feedbacks && $product->feedbacks->count() > 0
+            'feedback' => $product->feedbacks->count() > 0
                 ? $product->feedbacks->map(function ($feedback) {
                     return [
-                        'username' => $feedback->user->name ?? 'Anonymous',
-                        'rating' => $feedback->rating,
-                        'comment' => $feedback->comment,
-                        'date' => $feedback->created_at->toDateString(),
+                        'username' => $feedback->orderDetail->order->user->name ?? 'Anonymous',
+                        'rating'   => $feedback->rating,
+                        'comment'  => $feedback->feedback, // <-- use column name "feedback"
+                        'date'     => $feedback->created_at->toDateString(),
                     ];
                 })->values()->all()
                 : [],
         ];
 
         $relatedProducts = Product::with(['category', 'images'])
-            ->whereHas('category', function ($q) use ($product) {
-                $q->where('name', $product->category->name ?? '');
-            })
+            ->whereHas('category', fn($q) => $q->where('name', $product->category->name ?? ''))
             ->where('id', '!=', $product->id)
             ->take(4)
             ->get()
@@ -177,7 +177,7 @@ class ProductController extends Controller
                     'category' => $related->category->name ?? null,
                     'price' => (float) $related->price,
                     'stock_quantity' => $related->stock_quantity,
-                    'main_image' => $related->images && $related->images->count() > 0
+                    'main_image' => $related->images->count() > 0
                         ? asset($related->images->first()->image_path)
                         : null,
                 ];
@@ -189,5 +189,4 @@ class ProductController extends Controller
             'relatedProducts' => $relatedProducts,
         ]);
     }
-
 }
