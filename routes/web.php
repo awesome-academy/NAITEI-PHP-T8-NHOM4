@@ -57,5 +57,8 @@ Route::middleware(Localization::class)->group(function () {
 
         Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('/cart/save', [CartController::class, 'save'])->name('cart.save');
+        Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+        Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
     });
 });

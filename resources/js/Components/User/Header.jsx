@@ -141,7 +141,7 @@ export default function Header() {
                                                 {cart.items.map(item => (
                                                     <li key={item.id} className="flex items-center space-x-3">
                                                         <img
-                                                            src={item.image || '/images/placeholder.jpg'}
+                                                            src={item.image ? `/${item.image}` : '/images/placeholder.jpg'}
                                                             alt={item.name}
                                                             className="w-10 h-10 object-cover rounded"
                                                         />

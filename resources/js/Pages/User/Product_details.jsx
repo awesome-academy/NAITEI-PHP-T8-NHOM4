@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Feature from '@/Components/User/Features';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,13 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
             const newTotal = product.price * newQuantity;
             setTotalPrice(newTotal);
             return newQuantity;
+        });
+    };
+
+    const handleClick = () => {
+        router.post(route('cart.add'), {
+            product_id: product.id,
+            quantity: quantity,
         });
     };
 
@@ -141,7 +148,12 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
 
                                 {/* Buttons */}
                                 <div className="flex space-x-4">
-                                    <button className="flex-1 border border-orange-600 text-orange-600 px-6 py-3 rounded-md hover:bg-orange-50 transition-colors">{t('addToCart')}</button>
+                                    <button 
+                                        className="flex-1 border border-orange-600 text-orange-600 px-6 py-3 rounded-md hover:bg-orange-50 transition-colors"
+                                        onClick ={handleClick}
+                                    >
+                                        {t('addToCart')}
+                                    </button>
                                     <button className="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">{t('buyNow')}</button>
                                 </div>
                             </div>

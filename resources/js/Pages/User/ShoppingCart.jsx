@@ -3,10 +3,13 @@ import { Head, usePage } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import { router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
+import { useRef } from 'react';
 
 export default function ShoppingCart({ auth, cartItems = [] }) {
     const { t } = useTranslation();
     const [items, setItems] = useState(cartItems);
+
+    const debounceTimers = useRef({});
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const total = subtotal;
@@ -16,13 +19,52 @@ export default function ShoppingCart({ auth, cartItems = [] }) {
             removeItem(itemId);
             return;
         }
-        setItems(items.map(item => 
-            item.id === itemId ? { ...item, quantity: newQuantity } : item
-        ));
+
+        setItems(prev =>
+            prev.map(item =>
+                item.id === itemId ? { ...item, quantity: newQuantity } : item
+            )
+        );
+
+        if (debounceTimers.current[itemId]) {
+            clearTimeout(debounceTimers.current[itemId]);
+        }
+
+        debounceTimers.current[itemId] = setTimeout(() => {
+            router.patch(
+                route('cart.update', itemId),
+                { quantity: newQuantity },
+                {
+                    preserveScroll: true,
+                    onError: () => {
+                        alert(t('update_failed', 'Failed to update item.'));
+                    },
+                }
+            );
+        }, 1500);
     };
 
     const removeItem = (itemId) => {
-        setItems(items.filter(item => item.id !== itemId));
+        if (!confirm(t('confirm_remove', 'Are you sure you want to remove this item?'))) {
+            return;
+        }
+
+        setItems(prev => prev.filter(item => item.id !== itemId));
+
+        router.delete(route('cart.destroy', itemId), {
+            preserveScroll: true,
+            onError: () => {
+                alert(t('delete_failed', 'Failed to remove item.'));
+            },
+        });
+    };
+
+    const handleCheckout = () => {
+        if (items.length === 0) {
+            alert(t('cart_empty', 'Your cart is empty!'));
+            return;
+        }
+        router.get(route('checkout.index'));
     };
     
     return (

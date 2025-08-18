@@ -24,9 +24,14 @@ class Feedback extends Model
     ];
 
     // Relationships
-    public function orderDetail(): BelongsTo
+    public function product()
     {
-        return $this->belongsTo(OrderDetail::class);
+        return $this->orderDetail?->product;
+    }
+
+    public function user()
+    {
+        return $this->orderDetail?->order?->user;
     }
 
     public function images(): HasMany

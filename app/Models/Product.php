@@ -39,6 +39,18 @@ class Product extends Model
         return $this->hasMany(OrderDetail::class);
     }
 
+    public function feedbacks()
+    {
+        return $this->hasManyThrough(
+            Feedback::class,
+            OrderDetail::class,
+            'product_id', 
+            'order_detail_id',
+            'id',
+            'id'
+        );
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(Image::class, 'path_id')->where('image_type', 'product');

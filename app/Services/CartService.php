@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
+use App\Models\CartItem;
 
 class CartService
 {
@@ -56,5 +57,100 @@ class CartService
             'count' => $totalCount,
             'items' => $mappedItems,
         ];
+    }
+
+    /**
+     * Add item to cart
+     */
+    public function addToCart(int $productId, int $quantity = 1): CartItem
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            throw new \Exception('User not authenticated');
+        }
+
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $userId],
+            ['created_at' => now(), 'updated_at' => now()]
+        );
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($cartItem) {
+            $cartItem->quantity += $quantity;
+            $cartItem->touch();
+            $cartItem->save();
+        } else {
+            $cartItem = CartItem::create([
+                'cart_id'    => $cart->id,
+                'product_id' => $productId,
+                'quantity'   => $quantity,
+            ]);
+        }
+
+        return $cartItem;
+    }
+
+    /**
+     * Update item quantity in cart
+     */
+    public function updateCartItem(int $itemId, int $quantity): ?CartItem
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            throw new \Exception('User not authenticated');
+        }
+
+        $cart = Cart::where('user_id', $userId)->first();
+        if (!$cart) {
+            return null;
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $itemId)
+            ->first();
+
+        if (!$cartItem) {
+            return null;
+        }
+
+        if ($quantity <= 0) {
+            $cartItem->delete();
+            return null;
+        }
+
+        $cartItem->quantity = $quantity;
+        $cartItem->touch();
+        $cartItem->save();
+
+        return $cartItem;
+    }
+
+    /**
+     * Delete item from cart
+     */
+    public function removeCartItem(int $itemId): bool
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            throw new \Exception('User not authenticated');
+        }
+
+        $cart = Cart::where('user_id', $userId)->first();
+        if (!$cart) {
+            return false;
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $itemId)
+            ->first();
+
+        if (!$cartItem) {
+            return false;
+        }
+
+        return (bool) $cartItem->delete();
     }
 }
