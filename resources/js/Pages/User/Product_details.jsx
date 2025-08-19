@@ -26,6 +26,19 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
         });
     };
 
+    const handleBuyNow = () => {
+        router.post(route('cart.add'), {
+            product_id: product.id,
+            quantity: quantity,
+        }, {
+            onSuccess: () => {
+                router.get(route('checkout.index'));
+            }
+        });
+    };
+
+
+
     const renderStars = (rating) => {
         return Array.from({ length: 5 }, (_, index) => (
             <span
@@ -150,11 +163,16 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                                 <div className="flex space-x-4">
                                     <button 
                                         className="flex-1 border border-orange-600 text-orange-600 px-6 py-3 rounded-md hover:bg-orange-50 transition-colors"
-                                        onClick ={handleClick}
+                                        onClick={handleClick}
                                     >
                                         {t('addToCart')}
                                     </button>
-                                    <button className="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">{t('buyNow')}</button>
+                                    <button 
+                                        className="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors"
+                                        onClick={handleBuyNow}
+                                    >
+                                        {t('buyNow')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
