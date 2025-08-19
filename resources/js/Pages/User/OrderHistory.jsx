@@ -1,34 +1,47 @@
 import UserLayout from '@/Layouts/UserLayout';
 import { Head, Link } from '@inertiajs/react';
-import { EyeIcon, ClockIcon, CheckCircleIcon, TruckIcon, XCircleIcon } from '@heroicons/react/24/outline';
-
-const sampleOrders = [
-    { id: 'ORD-001', date: 'August 18, 2025', status: 'Delivered', total: '250.00', items_count: 3 },
-    { id: 'ORD-002', date: 'August 15, 2025', status: 'Shipped', total: '120.50', items_count: 1 },
-    { id: 'ORD-003', date: 'August 10, 2025', status: 'Processing', total: '75.00', items_count: 2 },
-    { id: 'ORD-004', date: 'July 25, 2025', status: 'Cancelled', total: '300.00', items_count: 4 },
-];
+import { EyeIcon, ClockIcon, CheckCircleIcon, TruckIcon, XCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 const statusConfig = {
-    Delivered: { 
+    delivered: { 
         style: 'bg-green-50 text-green-700 ring-1 ring-green-600/20', 
         icon: CheckCircleIcon 
     },
-    Shipped: { 
+    shipped: { 
         style: 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20', 
         icon: TruckIcon 
     },
-    Processing: { 
+    processing: { 
         style: 'bg-yellow-50 text-yellow-800 ring-1 ring-yellow-600/20', 
         icon: ClockIcon 
     },
-    Cancelled: { 
+    cancelled: { 
         style: 'bg-red-50 text-red-700 ring-1 ring-red-600/20', 
         icon: XCircleIcon 
     },
+    pending: {
+        style: 'bg-gray-50 text-gray-700 ring-1 ring-gray-600/20',
+        icon: ClockIcon
+    }
 };
 
-export default function OrderHistory({ auth, orders = sampleOrders }) {
+const sortOptions = [
+    { value: 'newest', label: 'Newest First', description: 'Most recent orders first' },
+    { value: 'oldest', label: 'Oldest First', description: 'Earliest orders first' }
+];
+
+export default function OrderHistory({ auth, orders, currentSort = 'newest' }) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const orderItems = orders.data;
+
+    const handleSortChange = (sortValue) => {
+        setIsDropdownOpen(false);
+        window.location.href = route('orders.history', { sort: sortValue });
+    };
+
+    const currentSortOption = sortOptions.find(option => option.value === currentSort);
+
     return (
         <UserLayout auth={auth}>
             <Head title="My Orders - Flatlogic" />
@@ -50,9 +63,55 @@ export default function OrderHistory({ auth, orders = sampleOrders }) {
 
                 {/* Content Section */}
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    {orders.length > 0 ? (
+                    {orderItems.length > 0 ? (
                         <div className="space-y-6">
-                            {orders.map((order) => {
+                            {/* Sorting Controls */}
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">
+                                        {orders.total} {orders.total === 1 ? 'Order' : 'Orders'}
+                                    </h2>
+                                    <p className="text-sm text-gray-600">
+                                        Sorted by {currentSortOption?.label.toLowerCase()}
+                                    </p>
+                                </div>
+
+                                {/* Sort Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="inline-flex items-center gap-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    >
+                                        Sort: {currentSortOption?.label}
+                                        <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {isDropdownOpen && (
+                                        <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                            <div className="py-1">
+                                                {sortOptions.map((option) => (
+                                                    <button
+                                                        key={option.value}
+                                                        onClick={() => handleSortChange(option.value)}
+                                                        className={`block w-full px-4 py-3 text-left text-sm hover:bg-gray-50 ${
+                                                            currentSort === option.value 
+                                                                ? 'bg-indigo-50 text-indigo-700' 
+                                                                : 'text-gray-900'
+                                                        }`}
+                                                    >
+                                                        <div className="font-medium">{option.label}</div>
+                                                        <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Orders List */}
+                            {orderItems.map((order) => {
                                 const StatusIcon = statusConfig[order.status]?.icon || ClockIcon;
                                 return (
                                     <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
@@ -63,16 +122,16 @@ export default function OrderHistory({ auth, orders = sampleOrders }) {
                                                     <div className="flex-shrink-0">
                                                         <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
                                                             <span className="text-indigo-600 font-semibold text-sm">
-                                                                #{order.id.split('-')[1]}
+                                                                #{order.id}
                                                             </span>
                                                         </div>
                                                     </div>
                                                     <div>
                                                         <h3 className="text-lg font-semibold text-gray-900">
-                                                            Order {order.id}
+                                                            Order #{order.id}
                                                         </h3>
                                                         <p className="text-sm text-gray-500">
-                                                            Placed on {new Date(order.date).toLocaleDateString('en-US', {
+                                                            Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
                                                                 year: 'numeric',
                                                                 month: 'long',
                                                                 day: 'numeric'
@@ -83,7 +142,7 @@ export default function OrderHistory({ auth, orders = sampleOrders }) {
 
                                                 {/* Status Badge */}
                                                 <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-                                                    <span className={`inline-flex items-center gap-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${statusConfig[order.status]?.style || 'bg-gray-100 text-gray-800'}`}>
+                                                    <span className={`inline-flex items-center gap-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium capitalize ${statusConfig[order.status]?.style || 'bg-gray-100 text-gray-800'}`}>
                                                         <StatusIcon className="h-4 w-4" />
                                                         {order.status}
                                                     </span>
@@ -100,7 +159,7 @@ export default function OrderHistory({ auth, orders = sampleOrders }) {
                                                         </span>
                                                         <span className="hidden sm:block">•</span>
                                                         <span className="flex items-center">
-                                                            <strong className="text-xl font-bold text-gray-900">${order.total}</strong>
+                                                            <strong className="text-xl font-bold text-gray-900">${parseFloat(order.total_amount).toFixed(2)}</strong>
                                                         </span>
                                                     </div>
 
