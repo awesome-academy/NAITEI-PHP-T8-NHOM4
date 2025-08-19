@@ -109,7 +109,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                 if (product && item.quantity > product.stock_quantity) {
                     // For existing orders, we need to account for currently used stock
                     const currentDetail = order.order_details?.find(d => d.product_id == item.product_id);
-                    const canReturnStock = editableStatuses.includes(order.status);
+                    const canReturnStock = canEditItems;
                     const availableStock = product.stock_quantity + (canReturnStock ? (currentDetail?.quantity || 0) : 0);
                     if (item.quantity > availableStock) {
                         newErrors[`items.${index}.quantity`] = `Only ${availableStock} items available${canReturnStock ? ' (including current order)' : ''}`;
