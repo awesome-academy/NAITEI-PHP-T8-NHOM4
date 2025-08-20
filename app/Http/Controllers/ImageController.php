@@ -27,6 +27,19 @@ class ImageController extends Controller
                 
                 // Move the file to public directory
                 $image->move($directory, $filename);
+            } elseif ($imageType === 'feedback') {
+                $directory = public_path("images/Feedbacks/{$pathId}");
+                
+                // Ensure directory exists
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                
+                $filename = time() . '_' . ($index + 1) . '.' . $image->getClientOriginalExtension();
+                $imagePath = "images/Feedbacks/{$pathId}/" . $filename;
+                
+                // Move the file to public directory
+                $image->move($directory, $filename);
             } else {
                 $imagePath = $image->store($folder, 'public');
             }
@@ -60,6 +73,19 @@ class ImageController extends Controller
             
             // Move the file to public directory
             $image->move($directory, $filename);
+        } elseif ($imageType === 'feedback') {
+            $directory = public_path("images/Feedbacks/{$pathId}");
+            
+            // Ensure directory exists
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = "images/Feedbacks/{$pathId}/" . $filename;
+            
+            // Move the file to public directory
+            $image->move($directory, $filename);
         } else {
             $imagePath = $image->store($folder, 'public');
         }
@@ -81,7 +107,7 @@ class ImageController extends Controller
             \Log::info("Image found: {$image->id}");
 
             // Delete image file from public directory
-            $filePath = public_path(rawurldecode($image->image_path));
+            $filePath = public_path($image->image_path);
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -108,7 +134,7 @@ class ImageController extends Controller
         
         foreach ($images as $image) {
             // Delete image file from public directory
-            $filePath = public_path(rawurldecode($image->image_path));
+            $filePath = public_path($image->image_path);
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -116,9 +142,15 @@ class ImageController extends Controller
             $image->delete();
         }
         
-        // Delete the entire folder for products
+        // Delete the entire folder for products and feedbacks
         if ($imageType === 'product') {
             $folderPath = public_path("images/Products/{$pathId}");
+            if (is_dir($folderPath)) {
+                // Remove the directory if it's empty
+                @rmdir($folderPath);
+            }
+        } elseif ($imageType === 'feedback') {
+            $folderPath = public_path("images/Feedbacks/{$pathId}");
             if (is_dir($folderPath)) {
                 // Remove the directory if it's empty
                 @rmdir($folderPath);

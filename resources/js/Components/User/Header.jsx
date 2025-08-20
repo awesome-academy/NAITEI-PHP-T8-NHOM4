@@ -97,6 +97,12 @@ export default function Header() {
                                                 {t('user.my_orders', 'My Orders')}
                                             </Link>
                                             <Link
+                                                href={route('feedbacks.index')}
+                                                className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                {t('user.feedbacks', 'My Feedbacks')}
+                                            </Link>
+                                            <Link
                                                 href="/logout"
                                                 method="post"
                                                 as="button"

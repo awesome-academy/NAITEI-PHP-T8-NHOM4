@@ -9,6 +9,11 @@ use App\Http\Controllers\Admin\CategoryController;
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'can:is-admin'])->group(function () {
+    // Redirect /admin to /admin/dashboard
+    Route::get('/', function () {
+        return redirect('/admin/dashboard');
+    })->name('admin.index');
+    
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Users Management

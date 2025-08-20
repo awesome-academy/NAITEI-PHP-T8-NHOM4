@@ -319,5 +319,8 @@
     "title": "New Arrivals",
     "subtitle": "Check out our latest collections featuring contemporary designs and timeless pieces. The new collection brings fresh ideas to your home.",
     "viewMore": "VIEW MORE"
+    },
+    "feedbacks": {
+        "delete_confirm": "Are you sure you want to delete this review?"
     }
 }
