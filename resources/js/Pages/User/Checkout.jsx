@@ -9,7 +9,7 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
 
     const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
     const grandTotal = subtotal + tax + shipping;
-    
+
     const { data, setData, post, processing, errors } = useForm({
         street_address: '',
         city: '',
@@ -24,7 +24,8 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
     });
 
     const handleSubmit = () => {
-        post(route('checkout.store'));
+        // Preserve scroll when posting
+        post(route('checkout.store'), { preserveScroll: true });
     };
 
     const isFormValid = () => {
@@ -56,11 +57,10 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                     {errors.checkout}
                                 </div>
                             )}
-                            
-                            {/* Payment Method Section */}
+
+                            {/* Payment Method */}
                             <div className="bg-white rounded-lg shadow-sm p-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6">{t('payment_method')}</h2>
-                                
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -71,17 +71,16 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                             onChange={(e) => setData('payment_method', e.target.value)}
                                             className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         >
-                                            <option value="credit_card">💳 {t('card')}</option>
+                                            <option value="card">💳 {t('card')}</option>
                                             <option value="cash">💵 {t('cash')}</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Address Section */}
+                            {/* Address */}
                             <div className="bg-white rounded-lg shadow-sm p-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6">{t('address')}</h2>
-                                
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -95,11 +94,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                         />
                                         {errors.street_address && <div className="text-red-500 text-sm mt-1">{errors.street_address}</div>}
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('city')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('city')}*</label>
                                         <input
                                             type="text"
                                             value={data.city}
@@ -107,11 +104,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('state')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('state')}*</label>
                                         <input
                                             type="text"
                                             value={data.state}
@@ -119,11 +114,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('postal_code')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('postal_code')}*</label>
                                         <input
                                             type="text"
                                             value={data.postal_code}
@@ -131,11 +124,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('country')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('country')}*</label>
                                         <select
                                             value={data.country}
                                             onChange={(e) => setData('country', e.target.value)}
@@ -149,15 +140,12 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                 </div>
                             </div>
 
-                            {/* People Section */}
+                            {/* Contact Details */}
                             <div className="bg-white rounded-lg shadow-sm p-6">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6">{t('contact_details')}</h2>
-                                
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('first_name')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('first_name')}*</label>
                                         <input
                                             type="text"
                                             value={data.first_name}
@@ -166,11 +154,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                         />
                                         {errors.first_name && <div className="text-red-500 text-sm mt-1">{errors.first_name}</div>}
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('last_name')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('last_name')}*</label>
                                         <input
                                             type="text"
                                             value={data.last_name}
@@ -178,11 +164,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('email')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}*</label>
                                         <input
                                             type="email"
                                             value={data.email}
@@ -191,11 +175,9 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                         />
                                         {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email}</div>}
                                     </div>
-                                    
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('phone')}*
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}*</label>
                                         <input
                                             type="tel"
                                             value={data.phone}
@@ -207,61 +189,35 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                             </div>
                         </div>
 
-                        {/* Right Column - Order Summary */}
+                        {/* Right Column */}
                         <div className="lg:col-span-1">
                             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8 flex flex-col max-h-[80vh]">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6">{t('order_details')}</h2>
-                                
-                                {/* Order Items */}
+
                                 <div className="space-y-4 mb-6 pr-2 flex-1 max-h-96 overflow-y-auto">
                                     {orderItems.map(item => (
-                                        <div 
-                                            key={item.id} 
-                                            className="flex items-center space-x-4 py-3 border-b border-gray-100 last:border-b-0"
-                                        >
+                                        <div key={item.id} className="flex items-center space-x-4 py-3 border-b border-gray-100 last:border-b-0">
                                             <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
-                                                <img 
-                                                    src={item.image} 
-                                                    alt={item.name}
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm font-medium text-gray-800 truncate">
-                                                    {item.name}
-                                                </h4>
+                                                <h4 className="text-sm font-medium text-gray-800 truncate">{item.name}</h4>
                                                 <p className="text-sm text-gray-500">
-                                                    ${parseFloat(item.price).toFixed(2)} × <strong style={{color:'red'}}>{item.quantity}</strong>
+                                                    ${parseFloat(item.price).toFixed(2)} × <strong className="text-red-600">{item.quantity}</strong>
                                                 </p>
                                             </div>
-                                            <div className="text-sm font-semibold text-gray-800">
-                                                ${parseFloat(item.total).toFixed(2)}
-                                            </div>
+                                            <div className="text-sm font-semibold text-gray-800">${parseFloat(item.total).toFixed(2)}</div>
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Order Summary */}
                                 <div className="border-t pt-4 space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">{t('subtotal')}</span>
-                                        <span className="font-medium">${parseFloat(subtotal).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">{t('tax')}</span>
-                                        <span className="font-medium">${parseFloat(tax).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">{t('shipping')}</span>
-                                        <span className="font-medium">${parseFloat(shipping).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-lg font-semibold border-t pt-3">
-                                        <span>{t('total')}</span>
-                                        <span className="text-orange-600">${parseFloat(grandTotal).toFixed(2)}</span>
-                                    </div>
+                                    <div className="flex justify-between text-sm"><span className="text-gray-600">{t('subtotal')}</span><span className="font-medium">${parseFloat(subtotal).toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-gray-600">{t('tax')}</span><span className="font-medium">${parseFloat(tax).toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-gray-600">{t('shipping')}</span><span className="font-medium">${parseFloat(shipping).toFixed(2)}</span></div>
+                                    <div className="flex justify-between text-lg font-semibold border-t pt-3"><span>{t('total')}</span><span className="text-orange-600">${parseFloat(grandTotal).toFixed(2)}</span></div>
                                 </div>
-                                
-                                {/* Place Order Button */}
+
                                 <button
                                     onClick={() => setShowConfirm(true)}
                                     disabled={processing || !isFormValid()}
@@ -281,7 +237,6 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                     <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('confirm_checkout')}</h3>
                         <p className="text-gray-600 mb-6">{t('are_you_sure_to_checkout')}</p>
-                        
                         <div className="flex justify-end space-x-3">
                             <button
                                 onClick={() => setShowConfirm(false)}

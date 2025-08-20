@@ -19,7 +19,7 @@ class ProductController extends Controller
                 'category' => $product->category->name ?? null,
                 'price' => (float) $product->price,
                 'stock_quantity' => $product->stock_quantity,
-                'reviews_count' => $product->reviews_count ?? 0, // If you have reviews count
+                'reviews_count' => $product->reviews_count ?? 0,
                 'created_at' => $product->created_at,
                 'main_image' => optional($product->images->first())->image_path
                     ? asset($product->images->first()->image_path)
@@ -27,8 +27,15 @@ class ProductController extends Controller
             ];
         });
 
-
         $filtered = $products;
+
+        // Search term
+        if ($request->has('search') && $request->search !== null) {
+            $term = strtolower($request->search);
+            $filtered = $filtered->filter(function ($product) use ($term) {
+                return str_contains(strtolower($product['name']), $term);
+            });
+        }
 
         // Filter by categories
         if ($request->has('categories') && !empty($request->categories)) {
@@ -55,19 +62,14 @@ class ProductController extends Controller
         if ($request->has('availability') && !empty($request->availability)) {
             $availability = $request->availability;
             $filtered = $filtered->filter(function ($product) use ($availability) {
-                if (in_array('in_stock', $availability) && $product['stock_quantity'] > 0) {
-                    return true;
-                }
-                if (in_array('out_of_stock', $availability) && $product['stock_quantity'] <= 0) {
-                    return true;
-                }
+                if (in_array('in_stock', $availability) && $product['stock_quantity'] > 0) return true;
+                if (in_array('out_of_stock', $availability) && $product['stock_quantity'] <= 0) return true;
                 return false;
             });
         }
 
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
-
         switch ($sortBy) {
             case 'name':
                 $filtered = $filtered->sortBy('name', SORT_REGULAR, false);
@@ -86,12 +88,12 @@ class ProductController extends Controller
                 break;
         }
 
-        // Pagination simulation (12 items per page)
+        // Pagination simulation
         $page = (int) $request->get('page', 1);
         $perPage = 12;
         $paginated = $filtered->values()->forPage($page, $perPage);
 
-        // Simulate paginator structure for Inertia
+        // Paginator structure
         $productsPaginated = [
             'data' => $paginated->values(),
             'current_page' => $page,
@@ -125,10 +127,11 @@ class ProductController extends Controller
             'products' => $productsPaginated,
             'categories' => $categories,
             'priceRange' => $priceRange,
-            'filters' => $request->only(['categories', 'min_price', 'max_price', 'availability', 'sort_by']),
+            'filters' => $request->only(['categories', 'min_price', 'max_price', 'availability', 'sort_by', 'search']),
             'totalCount' => $filtered->count(),
         ]);
     }
+
 
     public function show($id)
     {
