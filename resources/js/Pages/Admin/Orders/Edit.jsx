@@ -5,7 +5,7 @@ import SearchableSelect from '@/Components/Admin/SearchableSelect';
 import { HomeIcon, ArrowLeftIcon, PlusIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-export default function OrderEdit({ auth, order, customers = [], products = [] }) {
+export default function OrderEdit({ auth, order, customers = [], products = [], allowedStatuses = [], canEdit = false }) {
     const [formData, setFormData] = useState({
         user_id: order.user_id,
         status: order.status,
@@ -32,36 +32,31 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
         { value: 'canceled', label: 'Canceled', color: 'bg-red-100 text-red-800' }
     ];
 
-    // Check if order can be fully edited (items can be changed)
-    const canEditItems = order.status === 'pending';
+    // Get available status options based on backend data
+    const availableStatusOptions = canEdit 
+        ? statusOptions.filter(option => allowedStatuses.includes(option.value))
+        : [];
+
+    // Check if this is a final status (completed/canceled)
+    const isFinalStatus = ['completed', 'canceled'].includes(order.status);
     
-    // Check if only status can be updated
-    const canOnlyUpdateStatus = order.status === 'processing';
+    // Only allow status editing, all other fields are always disabled
+    const canEditItems = false; // Never allow editing items
+    const canEditCustomer = false; // Never allow editing customer
 
     const addItem = () => {
-        if (!canEditItems) return;
-        setFormData(prev => ({
-            ...prev,
-            items: [...prev.items, { product_id: '', quantity: 1 }]
-        }));
+        // Never allow adding items
+        return;
     };
 
     const removeItem = (index) => {
-        if (!canEditItems) return;
-        setFormData(prev => ({
-            ...prev,
-            items: prev.items.filter((_, i) => i !== index)
-        }));
+        // Never allow removing items
+        return;
     };
 
     const updateItem = (index, field, value) => {
-        if (!canEditItems) return;
-        setFormData(prev => ({
-            ...prev,
-            items: prev.items.map((item, i) => 
-                i === index ? { ...item, [field]: value } : item
-            )
-        }));
+        // Never allow updating items
+        return;
     };
 
     const getProduct = (productId) => {
@@ -83,46 +78,10 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
         setProcessing(true);
         setErrors({});
 
-        // For processing orders, only update status
-        const dataToSend = canOnlyUpdateStatus 
-            ? { status: formData.status }
-            : formData;
+        // Always only send status - never allow editing items or customer
+        const dataToSend = { status: formData.status };
 
-        // Validation
-        const newErrors = {};
-        if (!canOnlyUpdateStatus) {
-            if (!formData.user_id) {
-                newErrors.user_id = 'Customer is required';
-            }
-            if (formData.items.length === 0) {
-                newErrors.items = 'At least one item is required';
-            }
-
-            formData.items.forEach((item, index) => {
-                if (!item.product_id) {
-                    newErrors[`items.${index}.product_id`] = 'Product is required';
-                }
-                if (!item.quantity || item.quantity < 1) {
-                    newErrors[`items.${index}.quantity`] = 'Quantity must be at least 1';
-                }
-                const product = getProduct(item.product_id);
-                if (product && item.quantity > product.stock_quantity) {
-                    // For existing orders, we need to account for currently used stock
-                    const currentDetail = order.order_details?.find(d => d.product_id == item.product_id);
-                    const canReturnStock = canEditItems;
-                    const availableStock = product.stock_quantity + (canReturnStock ? (currentDetail?.quantity || 0) : 0);
-                    if (item.quantity > availableStock) {
-                        newErrors[`items.${index}.quantity`] = `Only ${availableStock} items available${canReturnStock ? ' (including current order)' : ''}`;
-                    }
-                }
-            });
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            setProcessing(false);
-            return;
-        }
+        // No validation needed since we're only updating status
 
         router.put(`/admin/orders/${order.id}`, dataToSend, {
             onSuccess: () => {
@@ -147,8 +106,8 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Status Warning */}
-                    {canOnlyUpdateStatus && (
+                    {/* Status Warning for different states */}
+                    {canEdit && (
                         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
@@ -158,14 +117,14 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                 </div>
                                 <div className="ml-3">
                                     <p className="text-sm text-blue-700">
-                                        This order is currently in processing status. Only the status can be updated.
+                                        Only the order status can be updated. Customer and items cannot be modified.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {!canEditItems && !canOnlyUpdateStatus && (
+                    {isFinalStatus && (
                         <div className="mb-6 bg-gray-50 border border-gray-200 rounded-md p-4">
                             <div className="flex">
                                 <div className="flex-shrink-0">
@@ -196,7 +155,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                     placeholder="Select Customer"
                                     getOptionLabel={(customer) => `${customer.fname} ${customer.lname} (${customer.email})`}
                                     getOptionValue={(customer) => customer.id}
-                                    disabled={!canEditItems}
+                                    disabled={true}
                                     error={errors.user_id}
                                 />
                                 {errors.user_id && (
@@ -209,17 +168,33 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Status
                                 </label>
-                                <select
-                                    value={formData.status}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                >
-                                    {statusOptions.map(option => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
+                                {canEdit ? (
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        {/* Current status as first option */}
+                                        <option value={order.status}>
+                                            {statusOptions.find(opt => opt.value === order.status)?.label || order.status}
                                         </option>
-                                    ))}
-                                </select>
+                                        {/* Available status transitions */}
+                                        {availableStatusOptions
+                                            .filter(option => option.value !== order.status)
+                                            .map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))
+                                        }
+                                    </select>
+                                ) : (
+                                    <div className="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-md shadow-sm text-gray-700">
+                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusOptions.find(opt => opt.value === order.status)?.color || 'bg-gray-100 text-gray-800'}`}>
+                                            {statusOptions.find(opt => opt.value === order.status)?.label || order.status}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Order Items */}
@@ -228,16 +203,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                     <label className="block text-sm font-medium text-gray-700">
                                         Order Items *
                                     </label>
-                                    {canEditItems && (
-                                        <button
-                                            type="button"
-                                            onClick={addItem}
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                            <PlusIcon className="h-4 w-4 mr-1" />
-                                            Add Item
-                                        </button>
-                                    )}
+                                    {/* Never show Add Item button */}
                                 </div>
 
                                 {errors.items && (
@@ -248,7 +214,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                     {formData.items.map((item, index) => {
                                         const product = getProduct(item.product_id);
                                         return (
-                                            <div key={index} className={`border rounded-lg p-4 ${canEditItems ? 'bg-gray-50' : 'bg-gray-100'}`}>
+                                            <div key={index} className="border rounded-lg p-4 bg-gray-100">
                                                 <div className="flex items-start space-x-4">
                                                     {/* Product Image */}
                                                     <div className="flex-shrink-0">
@@ -278,7 +244,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                                             placeholder="Select Product"
                                                             getOptionLabel={(product) => `${product.name} - $${product.price} (Stock: ${product.stock_quantity})`}
                                                             getOptionValue={(product) => product.id}
-                                                            disabled={!canEditItems}
+                                                            disabled={true}
                                                             error={errors[`items.${index}.product_id`]}
                                                         />
                                                         {errors[`items.${index}.product_id`] && (
@@ -297,7 +263,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                                             min="1"
                                                             value={item.quantity}
                                                             onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                                                            disabled={!canEditItems}
+                                                            disabled={true}
                                                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                                         />
                                                         {errors[`items.${index}.quantity`] && (
@@ -314,17 +280,8 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                                     </div>
 
                                                     <div className="pt-6">
-                                                        {canEditItems ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeItem(index)}
-                                                                className="text-red-600 hover:text-red-900"
-                                                            >
-                                                                <TrashIcon className="h-5 w-5" />
-                                                            </button>
-                                                        ) : (
-                                                            <div className="w-5 h-5"></div>
-                                                        )}
+                                                        {/* Never show remove button */}
+                                                        <div className="w-5 h-5"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -336,7 +293,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                     <div className="mt-4 p-4 bg-indigo-50 rounded-lg">
                                         <div className="flex justify-between items-center">
                                             <span className="text-lg font-medium text-gray-900">
-                                                {canEditItems ? 'New Total Amount:' : 'Current Total Amount:'}
+                                                Current Total Amount:
                                             </span>
                                             <span className="text-xl font-bold text-indigo-600">
                                                 ${calculateTotal().toFixed(2)}
@@ -364,8 +321,8 @@ export default function OrderEdit({ auth, order, customers = [], products = [] }
                                 </Link>
                                 <button
                                     type="submit"
-                                    disabled={processing}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                                    disabled={processing || (!canEdit && isFinalStatus)}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {processing ? 'Updating...' : 'Update Order'}
                                 </button>

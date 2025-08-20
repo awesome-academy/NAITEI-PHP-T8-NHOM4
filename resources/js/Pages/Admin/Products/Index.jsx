@@ -4,9 +4,21 @@ import PageHeader from '@/Components/Admin/PageHeader';
 import DataTable from '@/Components/Admin/DataTable';
 import { HomeIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
-export default function ProductsIndex({ auth, products = { data: [] }, filters = {}, categories = [] }) {
+export default function ProductsIndex({ auth, products = { data: [] }, filters = {}, categories = [], flash }) {
     const { t } = useTranslation();
+
+    // Handle flash messages
+    useEffect(() => {
+        if (flash && flash.success) {
+            toast.success(flash.success);
+        }
+        if (flash && flash.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     const breadcrumbs = [
         { label: t('dashboard'), href: '/admin/dashboard', icon: HomeIcon },
@@ -34,10 +46,14 @@ export default function ProductsIndex({ auth, products = { data: [] }, filters =
         if (confirm(t('delete_confirm', { name: product.name }))) {
             router.delete(`/admin/products/${product.id}`, {
                 onSuccess: () => {
-                    // Optional: Add success notification
+                    // Success message will be handled by useEffect from flash
                 },
-                onError: () => {
-                    alert(t('delete_error'));
+                onError: (errors) => {
+                    // Error message will be handled by useEffect from flash
+                    // Fallback for client-side errors
+                    if (!errors.message) {
+                        toast.error(t('delete_error'));
+                    }
                 }
             });
         }

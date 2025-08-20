@@ -101,7 +101,11 @@ class ProductController extends Controller
                 'sort' => $request->sort,
                 'direction' => $request->direction,
             ],
-            'categories' => $categories
+            'categories' => $categories,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ]
         ]);
     }
 
@@ -213,6 +217,20 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // Check if product has orders with pending or processing status
+        $activeOrders = $product->orderDetails()
+            ->whereHas('order', function ($query) {
+                $query->whereIn('status', ['pending', 'processing']);
+            })
+            ->with('order')
+            ->get();
+
+        if ($activeOrders->count() > 0) {
+            $orderIds = $activeOrders->pluck('order.id')->unique()->implode(', ');
+            return redirect()->route('admin.products.index')
+                ->with('error', "Cannot delete product '{$product->name}' because it has active orders (IDs: {$orderIds}) in pending or processing status. Please wait for these orders to be completed or cancelled.");
+        }
+
         // Delete all product images using ImageController
         $this->imageController->destroyImages('product', $product->id);
         
