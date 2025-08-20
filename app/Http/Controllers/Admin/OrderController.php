@@ -263,6 +263,18 @@ class OrderController extends Controller
                 'image' => $product->images->where('image_type', 'product')->first() ? asset(rawurldecode($product->images->where('image_type', 'product')->first()->image_path)) : null,
             ];
         });
+        
+        // Xác định các status có thể chuyển tới (chỉ cần khi canEdit = true)
+        $allowedStatuses = [];
+        $canEdit = !in_array($order->status, ['completed', 'canceled']);
+        
+        if ($canEdit) {
+            $statusProgression = [
+                'pending' => ['processing', 'canceled'],
+                'processing' => ['completed', 'canceled']
+            ];
+            $allowedStatuses = $statusProgression[$order->status] ?? [];
+        }
 
         return Inertia::render('Admin/Orders/Edit', [
             'auth' => [
@@ -284,7 +296,9 @@ class OrderController extends Controller
                 'updated_at' => $order->updated_at,
             ],
             'customers' => $customers,
-            'products' => $products
+            'products' => $products,
+            'allowedStatuses' => $allowedStatuses,
+            'canEdit' => $canEdit
         ]);
     }
 
@@ -293,85 +307,45 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $request->status;
         
-        // Xử lý thay đổi stock khi chuyển status 
-        if ($oldStatus !== $newStatus) {
-            // Nếu chuyển sang canceled, thêm lại stock_quantity
-            if ($newStatus === 'canceled' && $oldStatus !== 'canceled') {
-                foreach ($order->orderDetails as $detail) {
-                    $detail->product->increment('stock_quantity', $detail->quantity);
-                }
-            }
-
-            // Nếu chuyển từ canceled sang status khác, trừ lại stock_quantity
-            if ($oldStatus === 'canceled' && $newStatus !== 'canceled') {
-                // Validate stock trước khi chuyển từ canceled
-                $items = $order->orderDetails->map(function($detail) {
-                    return [
-                        'product_id' => $detail->product_id,
-                        'quantity' => $detail->quantity
-                    ];
-                })->toArray();
-                
-                $stockValidation = $this->validateStock($items);
-                if ($stockValidation !== true) {
-                    return $stockValidation;
-                }
-                
-                foreach ($order->orderDetails as $detail) {
-                    $detail->product->decrement('stock_quantity', $detail->quantity);
-                }
-            }
-        }
-
-        // Nếu chỉ update status (không có items), chỉ cập nhật status
-        if (!$request->has('items') || $request->items === null) {
-            $order->update([
-                'status' => $request->status,
+        // Kiểm tra xem order đã completed hoặc canceled chưa - không được chỉnh sửa nữa
+        if ($oldStatus === 'completed' || $oldStatus === 'canceled') {
+            return back()->withErrors([
+                'status' => 'Cannot update order with status: ' . $oldStatus
             ]);
-            
-            return redirect()->route('admin.orders.show', $order)
-                ->with('success', 'Order status updated successfully.');
-        }
-
-        // Nếu có items, thực hiện full update
-        $stockValidation = $this->validateStock($request->items, $order->id);
-        if ($stockValidation !== true) {
-            return $stockValidation;
-        }
-
-        // Xóa order details cũ 
-        foreach ($order->orderDetails as $detail) {
-            $this->orderDetailController->destroy($order, $detail, true); 
         }
         
+        // Validate status progression
+        $statusProgression = [
+            'pending' => ['processing', 'canceled'],
+            'processing' => ['completed', 'canceled']
+        ];
+        
+        if (!in_array($newStatus, $statusProgression[$oldStatus] ?? [])) {
+            $allowedTransitions = $statusProgression[$oldStatus] ?? [];
+            return back()->withErrors([
+                'status' => "Cannot change status from '{$oldStatus}' to '{$newStatus}'. Allowed transitions: " . (empty($allowedTransitions) ? 'None' : implode(', ', $allowedTransitions))
+            ]);
+        }
+        
+        // Nếu đổi status sang 'canceled', trả lại stock cho các sản phẩm
+        if ($newStatus === 'canceled') {
+            $this->orderDetailController->restoreStockForOrder($order);
+        }
+        
+        // Chỉ cho phép update status, không cho phép chỉnh sửa items, user_id, total_amount
         $order->update([
-            'user_id' => $request->user_id,
-            'total_amount' => 0, // Reset về 0, sẽ tính lại sau
-            'status' => $request->status,
+            'status' => $newStatus,
         ]);
         
-        // Tạo order details mới
-        $totalAmount = 0;
-        foreach ($request->items as $item) {
-            $orderDetail = $this->orderDetailController->store($item['product_id'], $order, $item['quantity']);
-            
-            // Tính total amount
-            $product = Product::find($item['product_id']);
-            $totalAmount += $product->price * $item['quantity'];
-        }
-        
-        // Cập nhật total amount cho order
-        $order->update(['total_amount' => $totalAmount]);
-
         return redirect()->route('admin.orders.show', $order)
-            ->with('success', 'Order updated successfully.');
+            ->with('success', 'Order status updated successfully.');
     }
 
     public function destroy(Order $order)
     {
-        // Xóa order details và khôi phục stock
+        // Xóa order details mà không khôi phục stock 
         foreach ($order->orderDetails as $detail) {
-            $this->orderDetailController->destroy($order, $detail, false); 
+            $this->orderDetailController->destroy($order, $detail, true, false);
         }
         
         $order->delete();

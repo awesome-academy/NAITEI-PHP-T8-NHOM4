@@ -51,13 +51,15 @@ class OrderDetailController extends Controller
         return $orderDetail;
     }
 
-    public function destroy(Order $order, OrderDetail $orderDetail, $skipTotalUpdate = false)
+    public function destroy(Order $order, OrderDetail $orderDetail, $skipTotalUpdate = false, $restoreStock = true)
     {
         $product = $orderDetail->product;
         $quantity = $orderDetail->quantity;
         $subtotal = $product->price * $quantity;
 
-        $product->increment('stock_quantity', $quantity);
+        if ($restoreStock) {
+            $product->increment('stock_quantity', $quantity);
+        }
         
         if (!$skipTotalUpdate) {
             $order->decrement('total_amount', $subtotal);
@@ -66,5 +68,13 @@ class OrderDetailController extends Controller
         $orderDetail->delete();
 
         return true;
+    }
+    
+    public function restoreStockForOrder(Order $order)
+    {
+        $order->load('orderDetails.product');
+        foreach ($order->orderDetails as $detail) {
+            $detail->product->increment('stock_quantity', $detail->quantity);
+        }
     }
 }
