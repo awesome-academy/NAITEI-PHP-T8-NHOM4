@@ -1,4 +1,9 @@
 {
+    "user.my_orders": "Đơn hàng của tôi",
+    "categories.electronics": "Điện tử",
+    "categories.clothes": "Quần áo",
+    "search_placeholder": "Tìm kiếm sản phẩm...",
+    "search_products": "Tìm kiếm sản phẩm",
     "confirm_checkout": "Xác nhận thanh toán",
     "are_you_sure_to_checkout": "Bạn có chắc chắn muốn đặt đơn hàng này không?",
     "payment_method": "Phương thức thanh toán",

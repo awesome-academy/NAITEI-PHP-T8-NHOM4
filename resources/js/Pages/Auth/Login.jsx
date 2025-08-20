@@ -105,7 +105,7 @@ export default function Login({ status, canResetPassword }) {
 
                             <div className="space-y-4">
                                 <PrimaryButton 
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 py-3 rounded-lg font-medium transition duration-200" 
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 py-3 rounded-lg font-medium transition duration-200 justify-center" 
                                     disabled={processing}
                                 >
                                     {processing ? t('signing_in', 'Signing in...') : t('sign_in', 'Sign In')}

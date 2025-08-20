@@ -58,11 +58,6 @@ Route::middleware(Localization::class)->group(function () {
         Route::delete('/feedbacks/images/destroy', [\App\Http\Controllers\FeedbackController::class, 'destroyImage'])->name('feedbacks.images.destroy');
     });
 
-    // user route example
-    // Route::get('/user/{user}', [UserController::class, 'show'])
-    //     ->middleware(['auth', 'can:view,user'])
-    //     ->name('user.show');
-
     Route::middleware(['auth', 'verified'])->group(function () {
         // Shopping Cart
         Route::get('/cart/preview', [CartController::class, 'preview'])->name('cart.preview');

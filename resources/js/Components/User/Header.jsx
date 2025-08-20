@@ -1,6 +1,6 @@
 // src/Components/Header.jsx
 import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
 
@@ -9,12 +9,33 @@ export default function Header() {
     const { auth } = usePage().props;
     const { cart = { count: 0, items: [] } } = usePage().props;
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const toggleDropdown = (name) => {
         setOpenDropdown(prev => prev === name ? null : name);
     };
 
     const closeAllDropdowns = () => setOpenDropdown(null);
+
+    const handleSearchClick = () => {
+        if (searchOpen) {
+            if (searchQuery.trim() === '') {
+                setSearchOpen(false);
+                return;
+            }
+            // Redirect to index with query
+            router.get('/', { search: searchQuery });
+        } else {
+            setSearchOpen(true);
+        }
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter' && searchQuery.trim() !== '') {
+            router.get('/products', { search: searchQuery });
+        }
+    };
 
     return (
         <header className="bg-white border-b border-gray-100">
@@ -28,7 +49,6 @@ export default function Header() {
                     <nav className="hidden md:flex items-center space-x-8">
                         {[
                             { label: t('nav.home'), href: '/' },
-                            { label: t('nav.pages')},
                             { label: t('nav.shop'), href: '/products' }
                         ].map((item, idx) => (
                             <div key={idx} className="relative group">
@@ -37,21 +57,6 @@ export default function Header() {
                                     className="text-gray-900 hover:text-orange-500 transition-colors font-medium flex items-center"
                                 >
                                     {item.label}
-                                    {item.label !== t('nav.home') && (
-                                        <svg
-                                            className="w-4 h-4 ml-1"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M19 9l-7 7-7-7"
-                                            />
-                                        </svg>
-                                    )}
                                 </a>
                             </div>
                         ))}
@@ -63,11 +68,27 @@ export default function Header() {
                         <LanguageSwitcher />
 
                         {/* Search */}
-                        <button className="text-gray-600 hover:text-gray-900 transition-colors">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
+                        <div className="relative flex items-center">
+                            {searchOpen && (
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleSearchKeyDown}
+                                    placeholder={t('search_placeholder')}
+                                    className="w-64 md:w-80 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    autoFocus
+                                />
+                            )}
+                            <button
+                                className={`text-gray-600 hover:text-gray-900 transition-colors ${searchOpen ? 'rounded-r-md border border-gray-300 border-l-0 px-3 py-2' : ''}`}
+                                onClick={handleSearchClick}
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
 
                         {/* User Dropdown */}
                         <div className="relative">
@@ -166,7 +187,6 @@ export default function Header() {
                                                     </li>
                                                 ))}
                                             </ul>
-                                            {/* View Cart Button */}
                                             <div className="mt-4">
                                                 <Link
                                                     href="/cart"
@@ -200,7 +220,7 @@ export default function Header() {
             {openDropdown === 'mobile' && (
                 <div className="md:hidden border-t border-gray-100">
                     <div className="px-4 py-4 space-y-2">
-                        {[t('nav.home'), t('nav.pages'), t('nav.shop')].map((label, idx) => (
+                        {[t('nav.home'), t('nav.shop')].map((label, idx) => (
                             <button key={idx} className="block py-2 text-gray-900 font-medium w-full text-left">
                                 {label}
                             </button>

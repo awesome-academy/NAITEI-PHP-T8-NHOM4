@@ -1,4 +1,8 @@
 {
+    "categories.electronics": "Electronics",
+    "categories.clothes": "Clothes",
+    "search_placeholder": "Search products...",
+    "search_products": "Search Products",
     "confirm_checkout": "Confirm Checkout",
     "are_you_sure_to_checkout": "Are you sure you want to place this order?",
     "payment_method": "Payment Method",
