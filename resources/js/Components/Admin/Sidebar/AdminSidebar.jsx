@@ -56,27 +56,27 @@ export default function AdminSidebar({ user, sidebarOpened, sidebarStatic, onTog
             isHeader: true,
             requiredRole: 'Admin',
         },
-        {
-            header: 'Feedback',
-            link: '/admin/feedback',
-            icon: ChatBubbleLeftRightIcon,
-            isHeader: true,
-            requiredRole: 'Admin',
-        },
-        {
-            header: 'Analytics',
-            link: '/admin/analytics',
-            icon: ChartBarIcon,
-            isHeader: true,
-            requiredRole: 'Admin',
-        },
-        {
-            header: 'Settings',
-            link: '/admin/settings',
-            icon: CogIcon,
-            isHeader: true,
-            requiredRole: 'Admin',
-        },
+        // {
+        //     header: 'Feedback',
+        //     link: '/admin/feedback',
+        //     icon: ChatBubbleLeftRightIcon,
+        //     isHeader: true,
+        //     requiredRole: 'Admin',
+        // },
+        // {
+        //     header: 'Analytics',
+        //     link: '/admin/analytics',
+        //     icon: ChartBarIcon,
+        //     isHeader: true,
+        //     requiredRole: 'Admin',
+        // },
+        // {
+        //     header: 'Settings',
+        //     link: '/admin/settings',
+        //     icon: CogIcon,
+        //     isHeader: true,
+        //     requiredRole: 'Admin',
+        // },
     ];
 
     const userMenuItems = [
@@ -152,7 +152,7 @@ export default function AdminSidebar({ user, sidebarOpened, sidebarStatic, onTog
                     ))}
 
                     {/* Documentation */}
-                    <LinksGroup
+                    {/* <LinksGroup
                         onActiveSidebarItemChange={handleActiveSidebarItemChange}
                         activeItem={activeItem}
                         header="Documentation"
@@ -161,7 +161,7 @@ export default function AdminSidebar({ user, sidebarOpened, sidebarStatic, onTog
                         isHeader={true}
                         labelColor="success"
                         target="_blank"
-                    />
+                    /> */}
                 </ul>
             </nav>
 

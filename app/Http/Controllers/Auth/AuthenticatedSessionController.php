@@ -34,6 +34,22 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Kiểm tra role của user sau khi đăng nhập
+        $user = Auth::user();
+        if ($user instanceof \Illuminate\Database\Eloquent\Model) {
+            $user->load('role');
+        }
+        
+        // Nếu user là admin, redirect đến admin dashboard
+        if ($user && $user->role_id) {
+            // Load role để kiểm tra
+            $role = $user->role;
+            if ($role && $role->name === 'Admin') {
+                return redirect()->intended('/admin/dashboard');
+            }
+        }
+
+        // Ngược lại, redirect đến trang home
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

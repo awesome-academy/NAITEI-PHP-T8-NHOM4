@@ -49,6 +49,13 @@ Route::middleware(Localization::class)->group(function () {
 
         Route::get('/my-orders', [OrderController::class, 'history'])->name('orders.history');
         Route::get('/my-orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        // Feedback routes
+        Route::get('/feedbacks', [\App\Http\Controllers\FeedbackController::class, 'index'])->name('feedbacks.index');
+        Route::post('/feedbacks', [\App\Http\Controllers\FeedbackController::class, 'store'])->name('feedbacks.store');
+        Route::put('/feedbacks/{feedback}', [\App\Http\Controllers\FeedbackController::class, 'update'])->name('feedbacks.update');
+        Route::delete('/feedbacks/{feedback}', [\App\Http\Controllers\FeedbackController::class, 'destroy'])->name('feedbacks.destroy');
+        Route::delete('/feedbacks/images/destroy', [\App\Http\Controllers\FeedbackController::class, 'destroyImage'])->name('feedbacks.images.destroy');
     });
 
     // user route example

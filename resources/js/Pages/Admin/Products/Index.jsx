@@ -58,7 +58,7 @@ export default function ProductsIndex({ auth, products = { data: [] }, filters =
                 <div className="flex items-center space-x-3">
                     {item.image && (
                         <img
-                            src={`/${item.image}`}
+                            src={item.image}
                             alt={value}
                             className="w-10 h-10 object-cover rounded-md border"
                         />
