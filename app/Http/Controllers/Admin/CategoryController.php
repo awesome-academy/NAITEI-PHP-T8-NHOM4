@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -92,6 +93,21 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
+        // Không cho phép xóa category "Uncategorized" nếu nó là category duy nhất
+        if ($category->name === 'Uncategorized' && Category::count() === 1) {
+            return redirect()->route('admin.categories.index')
+                ->with('error', 'Cannot delete the last category.');
+        }
+        
+        // Tạo hoặc lấy category mặc định "Uncategorized"
+        $uncategorized = Category::firstOrCreate(
+            ['name' => 'Uncategorized'],
+            ['description' => 'Default category for products without specific category']
+        );
+
+        // Chuyển tất cả sản phẩm thuộc category này về category "Uncategorized"
+        $category->products()->update(['category_id' => $uncategorized->id]);
+        
         $category->delete();
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }

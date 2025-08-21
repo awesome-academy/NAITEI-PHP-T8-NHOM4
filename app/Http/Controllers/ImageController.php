@@ -12,6 +12,13 @@ class ImageController extends Controller
     {
         $uploadedImages = [];
         
+        // For users, only allow one image - delete existing first
+        if ($imageType === 'user') {
+            $this->destroyImages($imageType, $pathId);
+            // Only take the first image for users
+            $images = array_slice($images, 0, 1);
+        }
+        
         foreach ($images as $index => $image) {
             // Store in specific folder structure for products
             if ($imageType === 'product') {
@@ -40,6 +47,19 @@ class ImageController extends Controller
                 
                 // Move the file to public directory
                 $image->move($directory, $filename);
+            } elseif ($imageType === 'user') {
+                $directory = public_path("images/Users/{$pathId}");
+                
+                // Ensure directory exists
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                
+                $filename = 'avatar_' . time() . '.' . $image->getClientOriginalExtension();
+                $imagePath = "images/Users/{$pathId}/" . $filename;
+                
+                // Move the file to public directory
+                $image->move($directory, $filename);
             } else {
                 $imagePath = $image->store($folder, 'public');
             }
@@ -59,6 +79,11 @@ class ImageController extends Controller
 
     public function storeImage($imageType, $pathId, $image, $folder = 'general', $altText = 'Image')
     {
+        // For users, only allow one image - delete existing first
+        if ($imageType === 'user') {
+            $this->destroyImages($imageType, $pathId);
+        }
+        
         // Store in specific folder structure for products
         if ($imageType === 'product') {
             $directory = public_path("images/Products/{$pathId}");
@@ -83,6 +108,19 @@ class ImageController extends Controller
             
             $filename = time() . '.' . $image->getClientOriginalExtension();
             $imagePath = "images/Feedbacks/{$pathId}/" . $filename;
+            
+            // Move the file to public directory
+            $image->move($directory, $filename);
+        } elseif ($imageType === 'user') {
+            $directory = public_path("images/Users/{$pathId}");
+            
+            // Ensure directory exists
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            
+            $filename = 'avatar_' . time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = "images/Users/{$pathId}/" . $filename;
             
             // Move the file to public directory
             $image->move($directory, $filename);
@@ -142,7 +180,7 @@ class ImageController extends Controller
             $image->delete();
         }
         
-        // Delete the entire folder for products and feedbacks
+        // Delete the entire folder for products, feedbacks, and users
         if ($imageType === 'product') {
             $folderPath = public_path("images/Products/{$pathId}");
             if (is_dir($folderPath)) {
@@ -151,6 +189,12 @@ class ImageController extends Controller
             }
         } elseif ($imageType === 'feedback') {
             $folderPath = public_path("images/Feedbacks/{$pathId}");
+            if (is_dir($folderPath)) {
+                // Remove the directory if it's empty
+                @rmdir($folderPath);
+            }
+        } elseif ($imageType === 'user') {
+            $folderPath = public_path("images/Users/{$pathId}");
             if (is_dir($folderPath)) {
                 // Remove the directory if it's empty
                 @rmdir($folderPath);

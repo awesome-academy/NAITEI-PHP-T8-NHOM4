@@ -65,6 +65,11 @@ export default function CategoriesIndex({ auth, categories = [] }) {
         }
     };
 
+    const canDelete = (item) => {
+        // Không cho phép xóa category "Uncategorized"
+        return item.name !== 'Uncategorized';
+    };
+
     const breadcrumbs = [
         { label: t('dashboard'), href: route('admin.dashboard'), icon: HomeIcon },
         { label: t('categories_index') },
@@ -99,6 +104,7 @@ export default function CategoriesIndex({ auth, categories = [] }) {
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    deleteCondition={canDelete}
                 />
             </div>
         </AdminLayout>

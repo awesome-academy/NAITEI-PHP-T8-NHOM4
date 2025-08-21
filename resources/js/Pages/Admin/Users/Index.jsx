@@ -1,38 +1,10 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import DataTable from '@/Components/Admin/DataTable';
 import PageHeader from '@/Components/Admin/PageHeader';
 import { HomeIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 
-export default function UsersIndex({ auth, users = [] }) {
-    // Sample users data
-    const sampleUsers = [
-        {
-            id: 1,
-            username: 'john_doe',
-            email: 'john@example.com',
-            role: 'Admin',
-            status: 'active',
-            created_at: '2024-01-15'
-        },
-        {
-            id: 2,
-            username: 'jane_smith',
-            email: 'jane@example.com',
-            role: 'User',
-            status: 'active',
-            created_at: '2024-01-14'
-        },
-        {
-            id: 3,
-            username: 'bob_johnson',
-            email: 'bob@example.com',
-            role: 'User',
-            status: 'inactive',
-            created_at: '2024-01-13'
-        }
-    ];
-
+export default function UsersIndex({ auth, users, filters, roles }) {
     const columns = [
         {
             key: 'id',
@@ -40,16 +12,28 @@ export default function UsersIndex({ auth, users = [] }) {
         },
         {
             key: 'username',
-            label: 'Username',
+            label: 'User',
             render: (value, item) => (
                 <div className="flex items-center">
-                    <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
+                    {item.avatar ? (
+                        <img 
+                            src={item.avatar} 
+                            alt={value}
+                            className="h-8 w-8 rounded-full mr-3"
+                        />
+                    ) : (
+                        <UserCircleIcon className="h-8 w-8 text-gray-400 mr-3" />
+                    )}
                     <div>
                         <div className="text-sm font-medium text-gray-900">{value}</div>
-                        <div className="text-sm text-gray-500">{item.email}</div>
+                        <div className="text-sm text-gray-500">{item.full_name}</div>
                     </div>
                 </div>
             )
+        },
+        {
+            key: 'email',
+            label: 'Email'
         },
         {
             key: 'role',
@@ -58,18 +42,7 @@ export default function UsersIndex({ auth, users = [] }) {
                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     value === 'Admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                 }`}>
-                    {value.charAt(0).toUpperCase() + value.slice(1)}
-                </span>
-            )
-        },
-        {
-            key: 'status',
-            label: 'Status',
-            render: (value) => (
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    value === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                    {value.charAt(0).toUpperCase() + value.slice(1)}
+                    {value}
                 </span>
             )
         },
@@ -80,18 +53,22 @@ export default function UsersIndex({ auth, users = [] }) {
     ];
 
     const handleView = (user) => {
-        console.log('View user:', user);
-        // Implement view logic
+        window.location.href = `/admin/users/${user.id}`;
     };
 
     const handleEdit = (user) => {
-        console.log('Edit user:', user);
-        // Implement edit logic
+        window.location.href = `/admin/users/${user.id}/edit`;
     };
 
     const handleDelete = (user) => {
-        console.log('Delete user:', user);
-        // Implement delete logic
+        if (user.id === auth.user.id) {
+            alert('You cannot delete your own account.');
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete user "${user.username}"?`)) {
+            router.delete(`/admin/users/${user.id}`);
+        }
     };
 
     const breadcrumbs = [
@@ -108,6 +85,9 @@ export default function UsersIndex({ auth, users = [] }) {
         }
     ];
 
+    // Prepare filter options - simple array of role names
+    const filterOptions = roles ? roles.map(role => role.name) : [];
+
     return (
         <AdminLayout user={auth.user}>
             <Head title="Users Management" />
@@ -122,10 +102,14 @@ export default function UsersIndex({ auth, users = [] }) {
             <div className="p-6">
                 <DataTable
                     columns={columns}
-                    data={users.length > 0 ? users : sampleUsers}
+                    data={users.data}
+                    pagination={users}
                     onView={handleView}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    searchPlaceholder="Search users..."
+                    filters={filters}
+                    filterOptions={filterOptions}
                 />
             </div>
         </AdminLayout>

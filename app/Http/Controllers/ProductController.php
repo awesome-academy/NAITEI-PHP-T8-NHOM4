@@ -138,7 +138,8 @@ class ProductController extends Controller
         $product = Product::with([
             'category',
             'images',
-            'feedbacks.orderDetail.order.user' // go deeper to reach the user
+            'feedbacks.orderDetail.order.user', // go deeper to reach the user
+            'feedbacks.images' // load feedback images
         ])->find($id);
 
         if (!$product) {
@@ -158,11 +159,18 @@ class ProductController extends Controller
                 : [],
             'feedback' => $product->feedbacks->count() > 0
                 ? $product->feedbacks->map(function ($feedback) {
+                    $user = $feedback->orderDetail->order->user ?? null;
                     return [
-                        'username' => $feedback->orderDetail->order->user->name ?? 'Anonymous',
+                        'username' => $user->username ?? 'Anonymous',
+                        'avatar' => $user && $user->images()->where('image_type', 'user')->exists()
+                            ? asset($user->images()->where('image_type', 'user')->first()->image_path)
+                            : null,
                         'rating'   => $feedback->rating,
                         'comment'  => $feedback->feedback, // <-- use column name "feedback"
                         'date'     => $feedback->created_at->toDateString(),
+                        'images'   => $feedback->images->map(function ($image) {
+                            return asset($image->image_path);
+                        })->values()->all()
                     ];
                 })->values()->all()
                 : [],

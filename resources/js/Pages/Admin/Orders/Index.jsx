@@ -182,12 +182,12 @@ export default function OrdersIndex({ auth, orders = { data: [] }, filters = {} 
                 title="Orders Management"
                 subtitle="Manage customer orders and order status"
                 breadcrumbs={breadcrumbs}
-                actions={[{
-                    type: 'link',
-                    label: 'Create Order',
-                    href: '/admin/orders/create',
-                    icon: PlusIcon
-                }]}
+                // actions={[{
+                //     type: 'link',
+                //     label: 'Create Order',
+                //     href: '/admin/orders/create',
+                //     icon: PlusIcon
+                // }]}
             />
 
             <div className="p-6">
