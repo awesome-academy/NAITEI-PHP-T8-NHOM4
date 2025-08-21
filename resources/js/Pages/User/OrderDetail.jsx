@@ -28,8 +28,9 @@ const samplePaymentMethod = {
 export default function OrderDetail({ auth, order }) {
     const [isCancelling, setIsCancelling] = useState(false);
     const StatusIcon = statusConfig[order.status]?.icon || ClockIcon;
-    
-    const subtotal = order.order_details.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+
+    // Use product_price from order_details instead of live product
+    const subtotal = order.order_details.reduce((acc, item) => acc + parseFloat(item.product_price) * item.quantity, 0);
     const shippingFee = 15.00;
     const freeShip = -15.00;
 
@@ -97,7 +98,6 @@ export default function OrderDetail({ auth, order }) {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column - Products */}
                         <div className="lg:col-span-2 space-y-6">
-                            {/* Products List */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                                 <div className="p-6">
                                     <h2 className="text-lg font-semibold text-gray-900 mb-6">Order Items</h2>
@@ -106,21 +106,24 @@ export default function OrderDetail({ auth, order }) {
                                             <div key={item.id} className="flex items-start space-x-4">
                                                 <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                                                     <img 
-                                                        // SỬA LẠI: Dùng decodeURIComponent để giải mã đường dẫn và xóa /storage/
-                                                        src={item.product.images.length > 0 ? `/${decodeURIComponent(item.product.images[0].image_path)}` : 'https://via.placeholder.com/150'} 
-                                                        alt={item.product.name} 
+                                                        src={
+                                                            item.product && item.product.images?.length > 0
+                                                                ? `/${decodeURIComponent(item.product.images[0].image_path)}`
+                                                                : 'https://via.placeholder.com/150'
+                                                        }
+                                                        alt={item.product_name}
                                                         className="w-full h-full object-cover object-center"
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="text-base font-medium text-gray-900 line-clamp-2">
-                                                        {item.product.name}
+                                                        {item.product_name}
                                                     </h3>
                                                     <p className="mt-1 text-sm text-gray-500">
                                                         Quantity: {item.quantity}
                                                     </p>
                                                     <p className="mt-1 text-lg font-semibold text-gray-900">
-                                                        ${(parseFloat(item.product.price) * item.quantity).toFixed(2)}
+                                                        ${(parseFloat(item.product_price) * item.quantity).toFixed(2)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -132,7 +135,6 @@ export default function OrderDetail({ auth, order }) {
 
                         {/* Right Column - Order Summary & Info */}
                         <div className="space-y-6">
-                            {/* Order Summary */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                                 <div className="p-6">
                                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>

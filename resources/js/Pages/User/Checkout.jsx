@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import UserLayout from '@/Layouts/UserLayout';
 
-export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) {
+export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0, prefill = null }) {
     const { t } = useTranslation();
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -11,26 +11,25 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
     const grandTotal = subtotal + tax + shipping;
 
     const { data, setData, post, processing, errors } = useForm({
-        street_address: '',
-        city: '',
-        state: '',
-        postal_code: '',
-        country: 'United States',
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
+        address: prefill?.address || '',
+        city: prefill?.city || '',
+        state: prefill?.state || '',
+        postal_code: prefill?.postal_code || '',
+        country: prefill?.country || 'United States',
+        first_name: prefill?.first_name || '',
+        last_name: prefill?.last_name || '',
+        email: prefill?.email || '',
+        phone: prefill?.phone || '',
         payment_method: 'cash',
     });
 
     const handleSubmit = () => {
-        // Preserve scroll when posting
         post(route('checkout.store'), { preserveScroll: true });
     };
 
     const isFormValid = () => {
         return (
-            data.street_address.trim() !== '' &&
+            data.address.trim() !== '' &&
             data.country.trim() !== '' &&
             data.first_name.trim() !== '' &&
             data.last_name.trim() !== '' &&
@@ -41,7 +40,7 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
     };
 
     const countries = [
-        'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany', 
+        'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany',
         'France', 'Japan', 'South Korea', 'Singapore', 'Vietnam'
     ];
 
@@ -84,15 +83,15 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0 }) 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            {t('street_address')}*
+                                            {t('address')}*
                                         </label>
                                         <input
                                             type="text"
-                                            value={data.street_address}
-                                            onChange={(e) => setData('street_address', e.target.value)}
+                                            value={data.address}
+                                            onChange={(e) => setData('address', e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
-                                        {errors.street_address && <div className="text-red-500 text-sm mt-1">{errors.street_address}</div>}
+                                        {errors.address && <div className="text-red-500 text-sm mt-1">{errors.address}</div>}
                                     </div>
 
                                     <div>
