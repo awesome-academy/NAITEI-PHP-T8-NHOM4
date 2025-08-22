@@ -24,7 +24,9 @@ class Order extends Model
         'country', 
         'total_amount', 
         'status', 
-        'payment_method'
+        'payment_method',
+        'tax',
+        'shipping_fee',
     ];
 
     protected $casts = [

@@ -31,8 +31,8 @@ export default function OrderDetail({ auth, order }) {
 
     // Use product_price from order_details instead of live product
     const subtotal = order.order_details.reduce((acc, item) => acc + parseFloat(item.product_price) * item.quantity, 0);
-    const shippingFee = 15.00;
-    const freeShip = -15.00;
+    const shippingFee = order.shipping_fee;
+    const tax = order.tax;
 
     const handleCancelOrder = () => {
         if (confirm('Are you sure you want to cancel this order?')) {
@@ -144,12 +144,12 @@ export default function OrderDetail({ auth, order }) {
                                             <span className="text-gray-900">${subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Shipping</span>
-                                            <span className="text-gray-900">${shippingFee.toFixed(2)}</span>
+                                            <span className="text-gray-600">Tax</span>
+                                            <span className="text-gray-900">${parseFloat(tax).toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Free Ship</span>
-                                            <span className="text-gray-900">${freeShip.toFixed(2)}</span>
+                                            <span className="text-gray-600">Shipping</span>
+                                            <span className="text-gray-900">${parseFloat(shippingFee).toFixed(2)}</span>
                                         </div>
                                         <div className="border-t border-gray-200 pt-3">
                                             <div className="flex justify-between">
