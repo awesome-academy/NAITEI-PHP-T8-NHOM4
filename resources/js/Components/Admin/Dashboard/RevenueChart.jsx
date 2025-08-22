@@ -24,22 +24,17 @@ ChartJS.register(
     Filler
 );
 
-export default function RevenueChart({ chartData }) {
+// SỬA ĐỔI: Nhận thêm prop `revenueOverview` từ backend
+export default function RevenueChart({ chartData, revenueOverview }) {
 
-    const maxValue = Math.max(...chartData.data);
-    const chartHeight = 300;
-
-    const currentMonthRevenue = chartData.data.reduce((sum, value) => sum + value, 0);
-    const previousMonthRevenue = chartData.previousData ? 
-        chartData.previousData.reduce((sum, value) => sum + value, 0) : 0;
-    
-    const growthPercentage = previousMonthRevenue > 0 ? 
-        ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100).toFixed(1) : 0;
-    
+    // SỬA ĐỔI: Xóa bỏ khối tính toán cũ và sử dụng trực tiếp dữ liệu từ `revenueOverview`
+    // Các giá trị này đã được tính toán an toàn ở backend
+    const totalRevenue = revenueOverview.total;
+    const averageDailyRevenue = revenueOverview.average;
+    const highestDay = revenueOverview.highest;
+    const lowestDay = revenueOverview.lowest;
+    const growthPercentage = revenueOverview.change;
     const isPositiveGrowth = growthPercentage >= 0;
-    const averageDailyRevenue = (currentMonthRevenue / chartData.data.length).toFixed(0);
-    const highestDay = Math.max(...chartData.data);
-    const lowestDay = Math.min(...chartData.data);
 
     const data = {
         labels: chartData.labels,
@@ -209,8 +204,8 @@ export default function RevenueChart({ chartData }) {
                             {new Intl.NumberFormat('en-US', {
                                 style: 'currency',
                                 currency: 'USD',
-                                minimumFractionDigits: 0,
-                            }).format(currentMonthRevenue)}
+                                minimumFractionDigits: 2, // Hiển thị 2 số thập phân cho chính xác
+                            }).format(totalRevenue)}
                         </p>
                         <p className="text-xs text-gray-500">Total Revenue</p>
                     </div>
@@ -238,7 +233,10 @@ export default function RevenueChart({ chartData }) {
                         <span className="text-xs font-medium text-gray-600">Avg/Day</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-900 mt-1">
-                        ${Number(averageDailyRevenue).toLocaleString()}
+                        {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        }).format(averageDailyRevenue)}
                     </p>
                 </div>
                 
@@ -248,7 +246,10 @@ export default function RevenueChart({ chartData }) {
                         <span className="text-xs font-medium text-gray-600">Highest</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-900 mt-1">
-                        ${highestDay.toLocaleString()}
+                        {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        }).format(highestDay)}
                     </p>
                 </div>
                 
@@ -258,7 +259,10 @@ export default function RevenueChart({ chartData }) {
                         <span className="text-xs font-medium text-gray-600">Lowest</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-900 mt-1">
-                        ${lowestDay.toLocaleString()}
+                        {new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                        }).format(lowestDay)}
                     </p>
                 </div>
             </div>

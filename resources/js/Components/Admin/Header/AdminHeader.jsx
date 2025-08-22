@@ -118,7 +118,7 @@ export default function AdminHeader({
                                 </div>
                                 <div className="hidden md:block text-left">
                                     <p className="text-sm font-medium">{user?.username || 'User'}</p>
-                                    <p className="text-xs text-gray-500">{user?.role || 'Role'}</p>
+                                    <p className="text-xs text-gray-500">{user?.role?.name || 'Role'}</p>
                                 </div>
                             </button>
                         </Dropdown.Trigger>
@@ -130,7 +130,7 @@ export default function AdminHeader({
                             </Dropdown.Link>
                             
                             <Dropdown.Link href="/admin/settings">
-                                <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                                <Cog6ToothIcon className="h-4 w-4 mr-2" />                                php artisan make:middleware HandleInertiaAdminRequests
                                 Settings
                             </Dropdown.Link>
                             

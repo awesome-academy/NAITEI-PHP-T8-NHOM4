@@ -18,7 +18,7 @@ class OrderDetailFactory extends Factory
     public function definition(): array
     {
         $product = Product::inRandomOrder()->first();
-        
+
         return [
             'product_id' => $product->id,
             'product_name' => $product->name,

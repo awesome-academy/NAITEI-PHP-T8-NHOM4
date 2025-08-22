@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class User extends Authenticatable
 {
@@ -52,7 +53,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    protected $appends = ['full_name'];
 
+    /**
+     * Get the user's full name.
+     *
+     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    protected function fullName(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->fname . ' ' . $this->lname,
+        );
+    }
     /**
      * Get the role that the user belongs to.
      */
