@@ -49,6 +49,7 @@ Route::middleware(Localization::class)->group(function () {
 
         Route::get('/my-orders', [OrderController::class, 'history'])->name('orders.history');
         Route::get('/my-orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::post('/my-orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
         // Feedback routes
         Route::get('/feedbacks', [\App\Http\Controllers\FeedbackController::class, 'index'])->name('feedbacks.index');

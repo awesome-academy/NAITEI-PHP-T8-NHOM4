@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Http\Controllers\Admin\OrderDetailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -10,6 +11,12 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
+    protected $orderDetailController;
+
+    public function __construct(OrderDetailController $orderDetailController)
+    {
+        $this->orderDetailController = $orderDetailController;
+    }
 
     public function history(Request $request): Response
     {
@@ -44,5 +51,28 @@ class OrderController extends Controller
         return Inertia::render('User/OrderDetail', [
             'order' => $order,
         ]);
+    }
+
+    public function cancel(Request $request, $orderId)
+    {
+        $order = Order::where('id', $orderId)
+            ->where('user_id', Auth::id())
+            ->with('orderDetails')
+            ->firstOrFail();
+
+        // Chỉ cho phép cancel khi order ở trạng thái pending
+        if ($order->status !== 'pending') {
+            return back()->withErrors([
+                'message' => 'You can only cancel orders with "Pending" status'
+            ]);
+        }
+
+        // Cập nhật trạng thái order thành canceled
+        $order->update(['status' => 'canceled']);
+
+        // Trả lại stock cho từng sản phẩm trong order
+        $this->orderDetailController->restoreStockForOrder($order);
+
+        return back()->with('success', 'Order has been cancelled successfully. Product quantities have been restored.');
     }
 }

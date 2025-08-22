@@ -1,6 +1,7 @@
 import UserLayout from '@/Layouts/UserLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeftIcon, CheckCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 const statusConfig = {
     completed: { style: 'bg-green-50 text-green-700 ring-1 ring-green-600/20', icon: CheckCircleIcon },
@@ -25,11 +26,25 @@ const samplePaymentMethod = {
 };
 
 export default function OrderDetail({ auth, order }) {
+    const [isCancelling, setIsCancelling] = useState(false);
     const StatusIcon = statusConfig[order.status]?.icon || ClockIcon;
     
     const subtotal = order.order_details.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
     const shippingFee = 15.00;
     const freeShip = -15.00;
+
+    const handleCancelOrder = () => {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            setIsCancelling(true);
+            router.post(route('orders.cancel', order.id), {}, {
+                onFinish: () => setIsCancelling(false),
+                onSuccess: () => {
+                    // Redirect back to order history
+                    router.visit(route('orders.history'));
+                }
+            });
+        }
+    };
 
     return (
         <UserLayout auth={auth}>
@@ -141,6 +156,23 @@ export default function OrderDetail({ auth, order }) {
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    {/* Cancel Button for Pending Orders */}
+                                    {order.status === 'pending' && (
+                                        <div className="mt-6 pt-4 border-t border-gray-200">
+                                            <button
+                                                onClick={handleCancelOrder}
+                                                disabled={isCancelling}
+                                                className="w-full inline-flex items-center justify-center gap-x-2 rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <XCircleIcon className="h-4 w-4" />
+                                                {isCancelling ? 'Cancelling...' : 'Cancel Order'}
+                                            </button>
+                                            <p className="mt-2 text-xs text-gray-500 text-center">
+                                                You can only cancel orders with "Pending" status
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

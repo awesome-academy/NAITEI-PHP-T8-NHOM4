@@ -3,12 +3,15 @@ import { Head, Link, router } from '@inertiajs/react';
 import UserLayout from '@/Layouts/UserLayout';
 import Feature from '@/Components/User/Features';
 import { useTranslation } from 'react-i18next';
+import { UserCircleIcon } from '@heroicons/react/24/outline';
 
 export default function ProductDetail({ auth, product, relatedProducts }) {
     const { t } = useTranslation();
     const [quantity, setQuantity] = useState(1);
     const [totalPrice, setTotalPrice] = useState(product.price);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [selectedReviewImage, setSelectedReviewImage] = useState(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const handleQuantityChange = (delta) => {
         setQuantity((prevQuantity) => {
@@ -48,6 +51,16 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                 ★
             </span>
         ));
+    };
+
+    const openImageModal = (imageSrc) => {
+        setSelectedReviewImage(imageSrc);
+        setIsImageModalOpen(true);
+    };
+
+    const closeImageModal = () => {
+        setIsImageModalOpen(false);
+        setSelectedReviewImage(null);
     };
 
     return (
@@ -187,20 +200,40 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                             </div>
 
                             <div className="space-y-6">
-                                {product.feedback.map((review) => (
-                                    <div key={review.id} className="flex space-x-4">
-                                        <img
-                                            src={review.avatar}
-                                            alt={review.username}
-                                            className="w-12 h-12 rounded-full object-cover"
-                                        />
+                                {product.feedback.map((review, index) => (
+                                    <div key={index} className="flex space-x-4">
+                                        {review.avatar ? (
+                                            <img
+                                                src={review.avatar}
+                                                alt={review.username}
+                                                className="w-12 h-12 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <UserCircleIcon className="w-12 h-12 text-gray-400" />
+                                        )}
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start mb-2">
                                                 <h4 className="font-medium text-gray-900">{review.username}</h4>
                                                 <span className="text-sm text-gray-500">{review.date}</span>
                                             </div>
                                             <div className="flex mb-2">{renderStars(review.rating)}</div>
-                                            <p className="text-gray-700 text-sm leading-relaxed">{review.comment}</p>
+                                            <p className="text-gray-700 text-sm leading-relaxed mb-3">{review.comment}</p>
+                                            
+                                            {/* Review Images */}
+                                            {review.images && review.images.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {review.images.map((image, imageIndex) => (
+                                                        <div key={imageIndex} className="relative">
+                                                            <img
+                                                                src={image}
+                                                                alt={`Review image ${imageIndex + 1}`}
+                                                                className="w-20 h-20 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-75 transition-opacity"
+                                                                onClick={() => openImageModal(image)}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -238,6 +271,26 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                     <Feature />
                 </div>
             </div>
+
+            {/* Image Modal */}
+            {isImageModalOpen && selectedReviewImage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" onClick={closeImageModal}>
+                    <div className="relative max-w-4xl max-h-full p-4">
+                        <button
+                            onClick={closeImageModal}
+                            className="absolute top-2 right-2 text-white hover:text-gray-300 text-2xl font-bold z-10"
+                        >
+                            ×
+                        </button>
+                        <img
+                            src={selectedReviewImage}
+                            alt="Review image full size"
+                            className="max-w-full max-h-full object-contain rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </UserLayout>
     );
 }

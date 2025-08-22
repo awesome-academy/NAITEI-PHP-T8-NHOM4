@@ -1,29 +1,14 @@
 import UserLayout from '@/Layouts/UserLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { EyeIcon, ClockIcon, CheckCircleIcon, TruckIcon, XCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 const statusConfig = {
-    delivered: { 
-        style: 'bg-green-50 text-green-700 ring-1 ring-green-600/20', 
-        icon: CheckCircleIcon 
-    },
-    shipped: { 
-        style: 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20', 
-        icon: TruckIcon 
-    },
-    processing: { 
-        style: 'bg-yellow-50 text-yellow-800 ring-1 ring-yellow-600/20', 
-        icon: ClockIcon 
-    },
-    cancelled: { 
-        style: 'bg-red-50 text-red-700 ring-1 ring-red-600/20', 
-        icon: XCircleIcon 
-    },
-    pending: {
-        style: 'bg-gray-50 text-gray-700 ring-1 ring-gray-600/20',
-        icon: ClockIcon
-    }
+    completed: { style: 'bg-green-50 text-green-700 ring-1 ring-green-600/20', icon: CheckCircleIcon },
+    shipped: { style: 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20', icon: TruckIcon },
+    processing: { style: 'bg-yellow-50 text-yellow-800 ring-1 ring-yellow-600/20', icon: ClockIcon },
+    canceled: { style: 'bg-red-50 text-red-700 ring-1 ring-red-600/20', icon: XCircleIcon },
+    pending: { style: 'bg-gray-50 text-gray-700 ring-1 ring-gray-600/20', icon: ClockIcon },
 };
 
 const sortOptions = [
@@ -33,11 +18,25 @@ const sortOptions = [
 
 export default function OrderHistory({ auth, orders, currentSort = 'newest' }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [cancellingOrderId, setCancellingOrderId] = useState(null);
     const orderItems = orders.data;
 
     const handleSortChange = (sortValue) => {
         setIsDropdownOpen(false);
         window.location.href = route('orders.history', { sort: sortValue });
+    };
+
+    const handleCancelOrder = (orderId) => {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            setCancellingOrderId(orderId);
+            router.post(route('orders.cancel', orderId), {}, {
+                onFinish: () => setCancellingOrderId(null),
+                onSuccess: () => {
+                    // Reload the page to get updated data
+                    window.location.reload();
+                }
+            });
+        }
     };
 
     const currentSortOption = sortOptions.find(option => option.value === currentSort);
@@ -164,13 +163,25 @@ export default function OrderHistory({ auth, orders, currentSort = 'newest' }) {
                                                     </div>
 
                                                     <div className="mt-4 sm:mt-0">
-                                                        <Link 
-                                                            href={route('orders.show', order.id)} 
-                                                            className="inline-flex items-center gap-x-2 rounded-lg bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"
-                                                        >
-                                                            <EyeIcon className="h-4 w-4" />
-                                                            View Details
-                                                        </Link>
+                                                        <div className="flex items-center space-x-3">
+                                                            {order.status === 'pending' && (
+                                                                <button
+                                                                    onClick={() => handleCancelOrder(order.id)}
+                                                                    disabled={cancellingOrderId === order.id}
+                                                                    className="inline-flex items-center gap-x-2 rounded-lg bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                >
+                                                                    <XCircleIcon className="h-4 w-4" />
+                                                                    {cancellingOrderId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                                                                </button>
+                                                            )}
+                                                            <Link 
+                                                                href={route('orders.show', order.id)} 
+                                                                className="inline-flex items-center gap-x-2 rounded-lg bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"
+                                                            >
+                                                                <EyeIcon className="h-4 w-4" />
+                                                                View Details
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
