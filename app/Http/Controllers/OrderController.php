@@ -21,7 +21,6 @@ class OrderController extends Controller
     public function history(Request $request): Response
     {
         $sortBy = $request->get('sort', 'newest');
-
         $orderDirection = $sortBy === 'oldest' ? 'asc' : 'desc';
 
         $orders = Order::where('user_id', Auth::id())
@@ -40,13 +39,26 @@ class OrderController extends Controller
         ]);
     }
 
-
     public function show($orderId): Response
     {
         $order = Order::where('id', $orderId)
             ->where('user_id', Auth::id())
-            ->with(['orderDetails.product.images'])
+            ->with(['orderDetails'])
             ->firstOrFail();
+
+        // Map order details to use stored product_name and product_price
+        $order->order_details = $order->orderDetails->map(function ($detail) {
+            return [
+                'id' => $detail->id,
+                'product_id' => $detail->product_id,
+                'quantity' => $detail->quantity,
+                'product_name' => $detail->product_name, // Use stored product name
+                'product_price' => $detail->product_price, // Use stored product price
+                 'image' => $detail->product?->images?->first()
+                            ? asset($detail->product?->images?->first()->image_path)
+                            : 'https://via.placeholder.com/150', // fallback if no image
+            ];
+        });
 
         return Inertia::render('User/OrderDetail', [
             'order' => $order,

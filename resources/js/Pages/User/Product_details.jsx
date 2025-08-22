@@ -15,12 +15,13 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
 
     const handleQuantityChange = (delta) => {
         setQuantity((prevQuantity) => {
-            const newQuantity = Math.max(1, prevQuantity + delta);
+            const newQuantity = Math.max(1, Math.min(product.stock_quantity, prevQuantity + delta)); 
             const newTotal = product.price * newQuantity;
             setTotalPrice(newTotal);
             return newQuantity;
         });
     };
+
 
     const handleClick = () => {
         router.post(route('cart.add'), {
@@ -137,7 +138,13 @@ export default function ProductDetail({ auth, product, relatedProducts }) {
                                     <h1 className="text-3xl font-bold text-gray-900 mt-2">
                                         {product.name}
                                     </h1>
+
+                                    {/* 🔹 Stock availability */}
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        {t('inStock')}: {product.stock_quantity}
+                                    </p>
                                 </div>
+
 
                                 {/* Rating */}
                                 <div className="flex items-center space-x-2">

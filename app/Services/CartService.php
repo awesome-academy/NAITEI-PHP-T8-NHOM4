@@ -49,7 +49,9 @@ class CartService
                 'quantity'   => $item->quantity,
                 'name'       => $item->product->name ?? null,
                 'price'      => $item->product->price ?? null,
-                'image'      => $item->product->images->first()->image_path ?? null,
+                'image'      => $item->product?->images->first()->image_path ?? null,
+                'stock_quantity' => $item->product->stock_quantity ?? 0,
+                'is_changed'     => $item->product && $item->product->updated_at > $item->updated_at,
             ];
         })->toArray();
 
@@ -74,12 +76,17 @@ class CartService
             ['created_at' => now(), 'updated_at' => now()]
         );
 
-        $cartItem = CartItem::where('cart_id', $cart->id)
+        $cartItem = CartItem::with('product')
+            ->where('cart_id', $cart->id)
             ->where('product_id', $productId)
             ->first();
 
         if ($cartItem) {
-            $cartItem->quantity += $quantity;
+            if ($cartItem->product->stock_quantity - $cartItem->quantity >= $quantity) {
+                $cartItem->quantity += $quantity;
+            } else {
+                $cartItem->quantity = $cartItem->product->stock_quantity;
+            }
             $cartItem->touch();
             $cartItem->save();
         } else {

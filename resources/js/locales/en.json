@@ -1,4 +1,8 @@
 {
+    "product_updated": "This product has been updated since the last time you checked it.",
+    "product_unavailable": "This product no longer existed",
+    "inStock": "products in stock",
+    "outOfStock": "Out of Stock",
     "categories.electronics": "Electronics",
     "categories.clothes": "Clothes",
     "search_placeholder": "Search products...",

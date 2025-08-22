@@ -35,20 +35,38 @@ class BillingController extends Controller
         // Transform so frontend gets total price per item
         $orderItems = collect($cartData['items'])->map(function ($item) {
             return [
-                'id'       => $item['id'],
+                'id'         => $item['id'],
                 'product_id' => $item['product_id'],
-                'name'     => $item['name'],
-                'price'    => $item['price'],
-                'quantity' => $item['quantity'],
-                'image'    => $item['image'],
-                'total'    => $item['price'] * $item['quantity'],
+                'name'       => $item['name'],
+                'price'      => $item['price'],
+                'quantity'   => $item['quantity'],
+                'image'      => $item['image'],
+                'total'      => $item['price'] * $item['quantity'],
             ];
         });
+
+        $latestOrder = Order::where('user_id', Auth::id())
+            ->latest()
+            ->first();
+
+        $prefill = [
+            'first_name'  => $latestOrder->first_name ?? '',
+            'last_name'   => $latestOrder->last_name ?? '',
+            'email'       => $latestOrder->email ?? '',
+            'phone'       => $latestOrder->phone ?? '',
+            'address'     => $latestOrder->address ?? '',
+            'city'        => $latestOrder->city ?? '',
+            'state'       => $latestOrder->state ?? '',
+            'postal_code' => $latestOrder->postal_code ?? '',
+            'country'     => $latestOrder->country ?? 'United States',
+        ];
+
 
         return Inertia::render('User/Checkout', [
             'orderItems' => $orderItems,
             'tax'        => $orderItems->sum('total') * self::TAX_RATE,
             'shipping'   => self::SHIPPING_COST,
+            'prefill'    => $prefill,
         ]);
     }
 
@@ -73,20 +91,21 @@ class BillingController extends Controller
             $tax        = $subtotal * self::TAX_RATE;
             $shipping   = self::SHIPPING_COST;
             $grandTotal = $subtotal + $tax + $shipping;
-            $address = $validated['street_address'] . "\n" .
-                                      ($validated['city'] ? $validated['city']. "\n" : '') .
-                                      ($validated['state'] ? $validated['state']. "\n" : '') .
-                                      ($validated['postal_code'] ? $validated['postal_code']. "\n" : '') .
-                                      $validated['country'];
 
             $order = Order::create([
-                'user_id'          => $user->id,
-                'recipient_name'   => $validated['first_name'] . ' ' . $validated['last_name'],
-                'recipient_phone'  => $validated['phone'],
-                'shipping_address' => $address,
-                'total_amount'     => $grandTotal,
-                'status'           => 'pending',
-                'payment_method'   => $validated['payment_method'],
+                'user_id'      => $user->id,
+                'first_name'   => $validated['first_name'],
+                'last_name'    => $validated['last_name'],
+                'email'        => $validated['email'],
+                'phone'        => $validated['phone'],
+                'address'      => $validated['address'],
+                'city'         => $validated['city'] ?: '',
+                'state'        => $validated['state'] ?: '',
+                'postal_code'  => $validated['postal_code'] ?: '',
+                'country'      => $validated['country'],
+                'total_amount' => $grandTotal,
+                'status'       => 'pending',
+                'payment_method' => $validated['payment_method'],
             ]);
 
             foreach ($cartItems as $item) {
@@ -104,9 +123,12 @@ class BillingController extends Controller
                     'order_id'   => $order->id,
                     'product_id' => $product->id,
                     'quantity'   => $item->quantity,
+                    'product_name'  => $product->name,
+                    'product_price' => $product->price,
                 ]);
             }
 
+            // Clear the cart after successful order
             CartItem::where('cart_id', $user->cart->id)->delete();
 
             DB::commit();

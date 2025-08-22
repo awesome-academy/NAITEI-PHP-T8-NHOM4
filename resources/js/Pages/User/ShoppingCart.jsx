@@ -15,14 +15,22 @@ export default function ShoppingCart({ auth, cartItems = [] }) {
     const total = subtotal;
 
     const updateQuantity = (itemId, newQuantity) => {
+        const item = items.find(i => i.id === itemId);
+        if (!item) return;
+
         if (newQuantity < 1) {
             removeItem(itemId);
             return;
         }
 
+        // 🔹 Cap at stock limit
+        if (newQuantity > item.stock_quantity) {
+            newQuantity = item.stock_quantity;
+        }
+
         setItems(prev =>
-            prev.map(item =>
-                item.id === itemId ? { ...item, quantity: newQuantity } : item
+            prev.map(i =>
+                i.id === itemId ? { ...i, quantity: newQuantity } : i
             )
         );
 
@@ -43,6 +51,7 @@ export default function ShoppingCart({ auth, cartItems = [] }) {
             );
         }, 1500);
     };
+
 
     const removeItem = (itemId) => {
         if (!confirm(t('confirm_remove', 'Are you sure you want to remove this item?'))) {
@@ -103,59 +112,111 @@ export default function ShoppingCart({ auth, cartItems = [] }) {
                                                 <div className="col-span-1 text-center">{t('total')}</div>
                                             </div>
 
-                                            {/* Cart Items */}
-                                            {items.map((item) => (
-                                                <div key={item.id} className="grid grid-cols-12 gap-4 py-4 border-b border-gray-200 items-center">
-                                                    {/* Product Info */}
-                                                    <div className="col-span-6 flex items-center space-x-4">
-                                                        <img
-                                                            src={item.image || '/images/placeholder.jpg'}
-                                                            alt={item.name}
-                                                            className="w-16 h-16 object-cover rounded"
-                                                        />
-                                                        <h3 className="font-medium text-gray-900">{item.name}</h3>
-                                                    </div>
+                                            {items.map((item) => {
+                                                const unavailable = !item.stock_quantity || item.stock_quantity <= 0;
 
-                                                    {/* Quantity Controls */}
-                                                    <div className="col-span-2 flex items-center justify-center space-x-2">
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                                                            disabled={item.quantity <= 1}
+                                                if (unavailable) {
+                                                    return (
+                                                        <div
+                                                            key={item.id}
+                                                            className="flex items-center justify-between py-6 px-4 bg-gray-100 border-b border-gray-200"
                                                         >
-                                                            -
-                                                        </button>
-                                                        <span className="w-12 text-center font-medium">{item.quantity}</span>
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
+                                                            {/* Message */}
+                                                            <div className="flex-1 text-center">
+                                                                <h3 className="text-lg font-semibold text-gray-500 italic">
+                                                                    {t('product_unavailable')}
+                                                                </h3>
+                                                            </div>
 
-                                                    {/* Price */}
-                                                    <div className="col-span-2 text-center">
-                                                        <span className="font-medium">${parseFloat(item.price).toFixed(2)}</span>
-                                                    </div>
+                                                            {/* Remove Icon */}
+                                                            <div className="ml-4">
+                                                                <span
+                                                                    onClick={() => removeItem(item.id)}
+                                                                    className="cursor-pointer text-red-600 hover:text-red-800 text-xl"
+                                                                    title={t('remove_item')}
+                                                                >
+                                                                    🗑️
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
 
-                                                    {/* Total */}
-                                                    <div className="col-span-1 text-center">
-                                                        <span className="font-medium">${parseFloat(item.price * item.quantity).toFixed(2)}</span>
-                                                    </div>
+                                                // Normal product layout
+                                                return (
+                                                    <div
+                                                        key={item.id}
+                                                        className="border-b border-gray-200"
+                                                    >
+                                                        {/* Row header for updated product notice */}
+                                                        {item.is_changed && (
+                                                            <div className="bg-yellow-50 px-3">
+                                                                <span className="text-[11px] font-medium text-yellow-800">
+                                                                    {t('product_updated')}
+                                                                </span>
+                                                            </div>
+                                                        )}
 
-                                                    {/* Remove Icon */}
-                                                    <div className="col-span-1 flex justify-center">
-                                                        <span
-                                                            onClick={() => removeItem(item.id)}
-                                                            className="cursor-pointer text-red-600 hover:text-red-800 text-lg"
-                                                            title={t('remove_item')}
-                                                        >
-                                                            🗑️
-                                                        </span>
+                                                        {/* Product row */}
+                                                        <div className="grid grid-cols-12 gap-4 py-1 items-center">
+                                                            {/* Product Info */}
+                                                            <div className="col-span-6 flex items-center space-x-4">
+                                                                <img
+                                                                    src={item.image || '/images/placeholder.jpg'}
+                                                                    alt={item.name}
+                                                                    className="w-16 h-16 object-cover rounded"
+                                                                />
+                                                                <h3 className="font-medium text-gray-900">{item.name}</h3>
+                                                            </div>
+
+                                                            {/* Quantity Controls */}
+                                                            <div className="col-span-2 flex items-center justify-center space-x-2">
+                                                                <button
+                                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                                                                    disabled={item.quantity <= 1}
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <span className="w-12 text-center font-medium">{item.quantity}</span>
+                                                                <button
+                                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                                                                    disabled={item.quantity >= item.stock_quantity}
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+
+                                                            {/* Price */}
+                                                            <div className="col-span-2 text-center">
+                                                                <span className="font-medium">
+                                                                    ${parseFloat(item.price).toFixed(2)}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Total */}
+                                                            <div className="col-span-1 text-center">
+                                                                <span className="font-medium">
+                                                                    ${parseFloat(item.price * item.quantity).toFixed(2)}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Remove Icon */}
+                                                            <div className="col-span-1 flex justify-center">
+                                                                <span
+                                                                    onClick={() => removeItem(item.id)}
+                                                                    className="cursor-pointer text-red-600 hover:text-red-800 text-lg"
+                                                                    title={t('remove_item')}
+                                                                >
+                                                                    🗑️
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
+
                                         </div>
                                     )}
                                 </div>

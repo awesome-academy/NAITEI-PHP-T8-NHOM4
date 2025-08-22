@@ -164,8 +164,8 @@ class OrderController extends Controller
                         'quantity' => $detail->quantity,
                         'product' => $detail->product ? [
                             'id' => $detail->product->id,
-                            'name' => $detail->product->name,
-                            'price' => $detail->product->price,
+                            'name' => $detail->product_name,
+                            'price' => $detail->product_price,
                             'image' => $detail->product->images->where('image_type', 'product')->first()
                                 ? asset(rawurldecode($detail->product->images->where('image_type', 'product')->first()->image_path))
                                 : null,
@@ -245,12 +245,18 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $user = User::with('role')->find(auth()->id());
-        $order->load(['user', 'orderDetails.product']);
-        
+
+        // Load user and product images only
+        $order->load(['user', 'orderDetails.product.images' => function($query) {
+            $query->where('image_type', 'product');
+        }]);
+
+        // Customers list for dropdown
         $customers = User::whereHas('role', function($query) {
             $query->where('name', 'User');
         })->get(['id', 'username', 'fname', 'lname', 'email']);
-        
+
+        // Products list for dropdown (current product data)
         $products = Product::with(['category', 'images' => function($query) {
             $query->where('image_type', 'product');
         }])->get(['id', 'name', 'price', 'stock_quantity', 'category_id'])->map(function($product) {
@@ -260,14 +266,15 @@ class OrderController extends Controller
                 'price' => $product->price,
                 'stock_quantity' => $product->stock_quantity,
                 'category_id' => $product->category_id,
-                'image' => $product->images->where('image_type', 'product')->first() ? asset(rawurldecode($product->images->where('image_type', 'product')->first()->image_path)) : null,
+                'image' => $product->images->where('image_type', 'product')->first()
+                    ? asset(rawurldecode($product->images->where('image_type', 'product')->first()->image_path))
+                    : null,
             ];
         });
-        
-        // Xác định các status có thể chuyển tới (chỉ cần khi canEdit = true)
+
+        // Determine editable statuses
         $allowedStatuses = [];
         $canEdit = !in_array($order->status, ['completed', 'canceled']);
-        
         if ($canEdit) {
             $statusProgression = [
                 'pending' => ['processing', 'canceled'],
@@ -275,6 +282,20 @@ class OrderController extends Controller
             ];
             $allowedStatuses = $statusProgression[$order->status] ?? [];
         }
+
+        // Map orderDetails to use frozen product data (name and price from order_detail)
+        $orderDetails = $order->orderDetails->map(function($detail) {
+            return [
+                'id' => $detail->id,
+                'product_id' => $detail->product_id,
+                'quantity' => $detail->quantity,
+                'product_name' => $detail->product_name,       // frozen name
+                'product_price' => $detail->product_price,     // frozen price
+                'image' => $detail->product && $detail->product->images->where('image_type', 'product')->first()
+                    ? asset(rawurldecode($detail->product->images->where('image_type', 'product')->first()->image_path))
+                    : null,
+            ];
+        });
 
         return Inertia::render('Admin/Orders/Edit', [
             'auth' => [
@@ -291,7 +312,7 @@ class OrderController extends Controller
                 'total_amount' => $order->total_amount,
                 'status' => $order->status,
                 'user' => $order->user,
-                'order_details' => $order->orderDetails,
+                'order_details' => $orderDetails,
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
             ],
@@ -306,40 +327,47 @@ class OrderController extends Controller
     {
         $oldStatus = $order->status;
         $newStatus = $request->status;
-        
-        // Kiểm tra xem order đã completed hoặc canceled chưa - không được chỉnh sửa nữa
-        if ($oldStatus === 'completed' || $oldStatus === 'canceled') {
+
+        // Prevent editing if order is completed or canceled
+        if (in_array($oldStatus, ['completed', 'canceled'])) {
             return back()->withErrors([
                 'status' => 'Cannot update order with status: ' . $oldStatus
             ]);
         }
-        
+
         // Validate status progression
         $statusProgression = [
             'pending' => ['processing', 'canceled'],
             'processing' => ['completed', 'canceled']
         ];
-        
+
         if (!in_array($newStatus, $statusProgression[$oldStatus] ?? [])) {
             $allowedTransitions = $statusProgression[$oldStatus] ?? [];
             return back()->withErrors([
                 'status' => "Cannot change status from '{$oldStatus}' to '{$newStatus}'. Allowed transitions: " . (empty($allowedTransitions) ? 'None' : implode(', ', $allowedTransitions))
             ]);
         }
-        
-        // Nếu đổi status sang 'canceled', trả lại stock cho các sản phẩm
+
+        // If order is canceled, restore stock from order_details
         if ($newStatus === 'canceled') {
-            $this->orderDetailController->restoreStockForOrder($order);
+            foreach ($order->orderDetails as $detail) {
+                // Only restore stock if the product still exists
+                $product = Product::find($detail->product_id);
+                if ($product) {
+                    $product->increment('stock_quantity', $detail->quantity);
+                }
+            }
         }
-        
-        // Chỉ cho phép update status, không cho phép chỉnh sửa items, user_id, total_amount
+
+        // Update only status
         $order->update([
             'status' => $newStatus,
         ]);
-        
+
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order status updated successfully.');
     }
+
 
     public function destroy(Order $order)
     {

@@ -1,4 +1,8 @@
 {
+    "product_updated": "Sản phẩm này đã được cập nhật trước lần bạn kiểm tra cuối cùng.",
+    "product_unavailable": "Sản phẩm không còn tồn tại",
+    "inStock": "hàng trong kho",
+    "outOfStock": "Hết hàng",
     "user.my_orders": "Đơn hàng của tôi",
     "categories.electronics": "Điện tử",
     "categories.clothes": "Quần áo",

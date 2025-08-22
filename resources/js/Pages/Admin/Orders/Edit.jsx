@@ -11,7 +11,10 @@ export default function OrderEdit({ auth, order, customers = [], products = [], 
         status: order.status,
         items: order.order_details?.map(detail => ({
             product_id: detail.product_id,
-            quantity: detail.quantity
+            quantity: detail.quantity,
+            product_name: detail.product_name,      // frozen name
+            product_price: detail.product_price,    // frozen price
+            image: detail.image || null             // frozen image
         })) || []
     });
 
@@ -65,13 +68,10 @@ export default function OrderEdit({ auth, order, customers = [], products = [], 
 
     const calculateTotal = () => {
         return formData.items.reduce((total, item) => {
-            const product = getProduct(item.product_id);
-            if (product) {
-                return total + (product.price * item.quantity);
-            }
-            return total;
+            return total + (item.product_price * item.quantity);
         }, 0);
     };
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -242,7 +242,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [], 
                                                             value={item.product_id}
                                                             onChange={(value) => updateItem(index, 'product_id', value)}
                                                             placeholder="Select Product"
-                                                            getOptionLabel={(product) => `${product.name} - $${product.price} (Stock: ${product.stock_quantity})`}
+                                                            getOptionLabel={(product) => `${item.product_name} - $${item.product_price} (Stock: ${product.stock_quantity})`}
                                                             getOptionValue={(product) => product.id}
                                                             disabled={true}
                                                             error={errors[`items.${index}.product_id`]}
@@ -275,7 +275,7 @@ export default function OrderEdit({ auth, order, customers = [], products = [], 
 
                                                     <div className="w-20 pt-6">
                                                         <p className="text-sm font-medium text-gray-900">
-                                                            ${product ? (product.price * item.quantity).toFixed(2) : '0.00'}
+                                                            ${product ? (item.product_price * item.quantity).toFixed(2) : '0.00'}
                                                         </p>
                                                     </div>
 
