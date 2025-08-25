@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth', 'can:is-admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'can:is-admin', 'inertia.admin'])->group(function () {
     // Redirect /admin to /admin/dashboard
     Route::get('/', function () {
-        return redirect('/admin/dashboard');
-    })->name('admin.index');
-    
+        return redirect()->route('admin.dashboard');
+    });
+
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 
     // Users Management
@@ -65,7 +65,7 @@ Route::prefix('admin')->middleware(['auth', 'can:is-admin'])->group(function () 
     Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->name('admin.orders.edit');
     Route::put('/orders/{order}', [OrderController::class, 'update'])->name('admin.orders.update');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('admin.orders.destroy');
-    
+
     // Feedback Management
     Route::get('/feedback', [AdminController::class, 'feedback'])->name('admin.feedback.index');
 

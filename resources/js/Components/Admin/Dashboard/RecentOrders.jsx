@@ -1,48 +1,52 @@
 import { Link } from '@inertiajs/react';
-import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 
-const statusStyles = {
+const statusColors = {
     completed: 'bg-green-100 text-green-800',
     processing: 'bg-yellow-100 text-yellow-800',
-    pending: 'bg-blue-100 text-blue-800',
+    pending: 'bg-orange-100 text-orange-800',
     canceled: 'bg-red-100 text-red-800',
+    default: 'bg-gray-100 text-gray-800',
 };
 
-export default function RecentOrders({ orders }) {
+export default function RecentOrders({ orders = [] }) {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md h-full flex flex-col">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
-            <div className="flow-root flex-grow">
-                <ul role="list" className="-my-5 divide-y divide-gray-200">
-                    {orders.map((order) => (
-                        <li key={order.id} className="py-4">
-                            <div className="flex items-center space-x-4">
-                                <div className="flex-shrink-0">
-                                    <img className="h-10 w-10 rounded-full object-cover" src={order.user.avatar_url} alt={order.user.name} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                        Order #{order.id}
-                                    </p>
-                                    <p className="text-sm text-gray-500 truncate">
-                                        by {order.user.name}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-medium text-gray-900">${parseFloat(order.total_amount).toFixed(2)}</p>
-                                    <span className={`inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${statusStyles[order.status] || 'bg-gray-100 text-gray-800'}`}>
-                                        {order.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
+        <div className="bg-white rounded-lg shadow-md h-full">
+            <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
             </div>
-            <div className="mt-6">
+            <div className="p-6 space-y-4">
+                {orders.length > 0 ? (
+                    orders.map((order) => (
+                        <div key={order.id} className="flex items-center justify-between">
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">Order #{order.id}</p>
+                                {/* SỬA ĐỔI: Hiển thị tên người dùng */}
+                                <p className="text-sm text-gray-500">
+                                    by {order.user ? `${order.user.fname} ${order.user.lname}`.trim() : 'N/A'}
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-semibold text-gray-900">
+                                    ${parseFloat(order.total_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                </p>
+                                <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize mt-1 ${
+                                        statusColors[order.status] || statusColors.default
+                                    }`}
+                                >
+                                    {order.status}
+                                </span>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-sm text-gray-500">No recent orders found.</p>
+                )}
+            </div>
+            <div className="p-6 border-t border-gray-200 text-center">
                 <Link
-                    href={route('admin.orders.index')} 
-                    className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    href={route('admin.orders.index')}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
                 >
                     View all orders
                 </Link>

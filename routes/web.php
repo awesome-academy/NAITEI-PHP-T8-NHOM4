@@ -38,6 +38,10 @@ Route::middleware(Localization::class)->group(function () {
 
     // Dashboard (requires login)
     Route::get('/dashboard', function () {
+        // SỬA ĐỔI: Kiểm tra vai trò và chuyển hướng nếu là Admin
+        if (auth()->user()->role === 'Admin') {
+            return redirect()->route('admin.dashboard');
+        }
         return Inertia::render('Dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 

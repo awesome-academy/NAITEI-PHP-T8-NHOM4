@@ -113,7 +113,6 @@ export default function AdminSidebar({ user, sidebarOpened, sidebarStatic, onTog
                     
                     {/* Main Navigation */}
                     {navigationItems.map((item, index) => {
-                        // Kiểm tra quyền truy cập
                         if (item.requiredRole && user?.role !== item.requiredRole) {
                             return null;
                         }
