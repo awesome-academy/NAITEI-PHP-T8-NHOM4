@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import UserLayout from '@/Layouts/UserLayout';
 
-export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0, prefill = null }) {
+export default function BillingInfo({ orderItems = [], tax = 0, shipping: initialShipping = 0, prefill = null }) {
     const { t } = useTranslation();
     const [showConfirm, setShowConfirm] = useState(false);
+    const [shipping, setShipping] = useState(initialShipping);
 
     const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
     const grandTotal = subtotal + tax + shipping;
@@ -38,6 +39,36 @@ export default function BillingInfo({ orderItems = [], tax = 0, shipping = 0, pr
             data.payment_method.trim() !== ''
         );
     };
+
+    // 🔹 Fetch shipping when order items or country changes
+    useEffect(() => {
+        async function fetchShipping() {
+            try {
+                const response = await fetch('/api/shipping/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        items: orderItems,
+                        country: data.country,
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Failed to calculate shipping');
+                const result = await response.json();
+                setShipping(result.shipping);
+            } catch (error) {
+                console.error(error);
+                setShipping(initialShipping);
+            }
+        }
+
+        if (orderItems.length > 0) {
+            fetchShipping();
+        }
+    }, [orderItems, data.country])
 
     const countries = [
         'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany',

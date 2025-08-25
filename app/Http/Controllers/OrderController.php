@@ -49,14 +49,14 @@ class OrderController extends Controller
         // Map order details to use stored product_name and product_price
         $order->order_details = $order->orderDetails->map(function ($detail) {
             return [
-                'id' => $detail->id,
-                'product_id' => $detail->product_id,
-                'quantity' => $detail->quantity,
-                'product_name' => $detail->product_name, // Use stored product name
+                'id'            => $detail->id,
+                'product_id'    => $detail->product_id,
+                'quantity'      => $detail->quantity,
+                'product_name'  => $detail->product_name, // Use stored product name
                 'product_price' => $detail->product_price, // Use stored product price
-                 'image' => $detail->product?->images?->first()
-                            ? asset($detail->product?->images?->first()->image_path)
-                            : 'https://via.placeholder.com/150', // fallback if no image
+                'image'         => $detail->product?->images?->first()
+                                    ? asset($detail->product?->images?->first()->image_path)
+                                    : 'https://via.placeholder.com/150', // fallback if no image
             ];
         });
 
