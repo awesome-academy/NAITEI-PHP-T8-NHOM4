@@ -17,8 +17,12 @@ class OrderDetailFactory extends Factory
      */
     public function definition(): array
     {
+        $product = Product::inRandomOrder()->first();
+        
         return [
-            'product_id' => Product::inRandomOrder()->first()->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_price' => $product->price,
             'quantity' => $this->faker->numberBetween(1, 3),
         ];
     }

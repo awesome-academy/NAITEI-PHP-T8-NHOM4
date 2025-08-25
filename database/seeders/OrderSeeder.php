@@ -15,7 +15,7 @@ class OrderSeeder extends Seeder
     public function run(): void
     {
         $users = User::whereHas('role', function ($query) {
-            $query->where('name', 'user');
+            $query->where('name', 'User');  // Sửa từ 'user' thành 'User' để khớp với RoleSeeder
         })->get();
 
         foreach ($users as $user) {
