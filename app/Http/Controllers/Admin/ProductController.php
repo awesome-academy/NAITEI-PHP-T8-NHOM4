@@ -3,22 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ImageController;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\User;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    protected $imageController;
+    protected $productService;
 
-    public function __construct(ImageController $imageController)
+    public function __construct(ProductService $productService)
     {
-        $this->imageController = $imageController;
+        $this->productService = $productService;
     }
     
     // Product CRUD Methods
@@ -26,41 +25,19 @@ class ProductController extends Controller
     {
         $user = User::with('role')->find(auth()->id());
         
-        // Lấy tất cả categories để hiển thị trong filter dropdown
-        $categories = Category::orderBy('name')->get();
+        // Get filters from request
+        $filters = [
+            'search' => $request->search,
+            'category' => $request->category,
+            'sort' => $request->get('sort', 'created_at'),
+            'direction' => $request->get('direction', 'desc'),
+        ];
         
-        $query = Product::with('category');
-        
-        // Tìm kiếm theo tên 
-        if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
-        
-        // Lọc theo categories (hỗ trợ multiple categories với OR logic)
-        if ($request->has('category') && $request->category) {
-            $categoryNames = explode(',', $request->category);
-            $query->whereHas('category', function ($q) use ($categoryNames) {
-                $q->whereIn('name', $categoryNames);
-            });
-        }
-
-        // Xử lý sorting
-        $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
-        
-        // Validate sort fields
-        $allowedSortFields = ['id', 'name', 'price', 'stock_quantity', 'created_at'];
-        if (in_array($sortField, $allowedSortFields)) {
-            $query->orderBy($sortField, $sortDirection);
-        } else {
-            $query->latest();
-        }
-        
-        // Xử lý phân trang
         $perPage = $request->get('per_page', 10);
         $perPage = in_array($perPage, [5, 10, 25, 50, 100]) ? $perPage : 10;
         
-        $products = $query->paginate($perPage)->appends($request->query());
+        $products = $this->productService->getAllProducts($filters, $perPage);
+        $categories = $this->productService->getAllCategories();
 
         return Inertia::render('Admin/Products/Index', [
             'auth' => [
@@ -95,12 +72,7 @@ class ProductController extends Controller
                 'prev_page_url' => $products->previousPageUrl(),
                 'path' => $products->path(),
             ],
-            'filters' => [
-                'search' => $request->search,
-                'category' => $request->category,
-                'sort' => $request->sort,
-                'direction' => $request->direction,
-            ],
+            'filters' => $filters,
             'categories' => $categories,
             'flash' => [
                 'success' => session('success'),
@@ -112,7 +84,7 @@ class ProductController extends Controller
     public function create()
     {
         $user = User::with('role')->find(auth()->id());
-        $categories = Category::all();
+        $categories = $this->productService->getAllCategories();
 
         return Inertia::render('Admin/Products/Create', [
             'auth' => [
@@ -130,12 +102,9 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $productData = $request->only(['name', 'description', 'price', 'category_id', 'stock_quantity']);
-        $product = Product::create($productData);
-
-        // Handle multiple images upload using ImageController generic method
-        if ($request->hasFile('images')) {
-            $this->imageController->storeImages('product', $product->id, $request->file('images'), 'products', $product->name);
-        }
+        $images = $request->hasFile('images') ? $request->file('images') : null;
+        
+        $product = $this->productService->createProduct($productData, $images);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product created successfully.');
@@ -144,7 +113,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $user = User::with('role')->find(auth()->id());
-        $product->load(['category', 'images']);
+        $product = $this->productService->getProductById($product->id, ['category', 'images']);
 
         return Inertia::render('Admin/Products/Show', [
             'auth' => [
@@ -173,8 +142,8 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $user = User::with('role')->find(auth()->id());
-        $categories = Category::all();
-        $product->load(['category', 'images']);
+        $categories = $this->productService->getAllCategories();
+        $product = $this->productService->getProductById($product->id, ['category', 'images']);
 
         return Inertia::render('Admin/Products/Edit', [
             'auth' => [
@@ -204,12 +173,9 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         $productData = $request->only(['name', 'description', 'price', 'category_id', 'stock_quantity']);
-        $product->update($productData);
-
-        // Handle new images upload using ImageController generic method
-        if ($request->hasFile('images')) {
-            $this->imageController->storeImages('product', $product->id, $request->file('images'), 'products', $product->name);
-        }
+        $images = $request->hasFile('images') ? $request->file('images') : null;
+        
+        $this->productService->updateProduct($product, $productData, $images);
 
         return redirect()->route('admin.products.show', $product->id)
             ->with('success', 'Product updated successfully.');
@@ -217,31 +183,19 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        // Check if product has orders with pending or processing status
-        $activeOrders = $product->orderDetails()
-            ->whereHas('order', function ($query) {
-                $query->whereIn('status', ['pending', 'processing']);
-            })
-            ->with('order')
-            ->get();
+        $result = $this->productService->deleteProduct($product);
 
-        if ($activeOrders->count() > 0) {
-            $orderIds = $activeOrders->pluck('order.id')->unique()->implode(', ');
+        if ($result['success']) {
             return redirect()->route('admin.products.index')
-                ->with('error', "Cannot delete product '{$product->name}' because it has active orders (IDs: {$orderIds}) in pending or processing status. Please wait for these orders to be completed or cancelled.");
+                ->with('success', $result['message']);
+        } else {
+            return redirect()->route('admin.products.index')
+                ->with('error', $result['message']);
         }
-
-        // Delete all product images using ImageController
-        $this->imageController->destroyImages('product', $product->id);
-        
-        $product->delete();
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
     }
 
     public function destroyProductImage($productId, $imageId)
     {
-        return $this->imageController->destroyImage($imageId);
+        return $this->productService->destroyProductImage($imageId);
     }
 }

@@ -6,6 +6,7 @@
 /storage/*.key
 /vendor
 .env
+.env.testing
 .env.backup
 .env.production
 .phpunit.result.cache
@@ -19,3 +20,4 @@ yarn-error.log
 /.vscode
 /bower_components
 /public/images/*
+/coverage
