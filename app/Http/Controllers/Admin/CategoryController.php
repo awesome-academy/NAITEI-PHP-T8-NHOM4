@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Product;
 use App\Models\User;
+use App\Repositories\Interfaces\CategoryRepositoryInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,6 +13,12 @@ use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
+    protected $categoryRepository;
+
+    public function __construct(CategoryRepositoryInterface $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
 
     private function getAuthenticatedUserData(): array
     {
@@ -32,11 +37,8 @@ class CategoryController extends Controller
 
     public function index(): Response
     {
-        $queryParams = request()->except('page');
-        $categories = Category::query()
-            ->latest('id')
-            ->paginate(10)
-            ->appends($queryParams);
+        $categories = $this->categoryRepository->getPaginated(10)
+            ->appends(request()->except('page'));
 
         return Inertia::render('Admin/Categories/Index', array_merge(
             $this->getAuthenticatedUserData(),
@@ -55,60 +57,52 @@ class CategoryController extends Controller
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
             'description' => ['nullable', 'string'],
         ]);
-        Category::create($validated);
+        $this->categoryRepository->create($validated);
         return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
     }
 
-    public function show(Category $category): Response
+    public function show(int $id): Response
     {
+        $category = $this->categoryRepository->findById($id);
         return Inertia::render('Admin/Categories/Show', array_merge(
             $this->getAuthenticatedUserData(),
             ['category' => $category]
         ));
     }
 
-    public function edit(Category $category): Response
+    public function edit(int $id): Response
     {
+        $category = $this->categoryRepository->findById($id);
         return Inertia::render('Admin/Categories/Edit', array_merge(
             $this->getAuthenticatedUserData(),
             ['category' => $category]
         ));
     }
 
-    public function update(Request $request, Category $category): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('categories')->ignore($category->id),
+                Rule::unique('categories')->ignore($id),
             ],
             'description' => ['nullable', 'string'],
         ]);
-        $category->update($validated);
+        $this->categoryRepository->update($id, $validated);
         return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
     }
 
-
-    public function destroy(Category $category): RedirectResponse
+    public function destroy(int $id): RedirectResponse
     {
-        // Không cho phép xóa category "Uncategorized" nếu nó là category duy nhất
-        if ($category->name === 'Uncategorized' && Category::count() === 1) {
+        $deleted = $this->categoryRepository->delete($id);
+
+        if (!$deleted) {
             return redirect()->route('admin.categories.index')
                 ->with('error', 'Cannot delete the last category.');
         }
-        
-        // Tạo hoặc lấy category mặc định "Uncategorized"
-        $uncategorized = Category::firstOrCreate(
-            ['name' => 'Uncategorized'],
-            ['description' => 'Default category for products without specific category']
-        );
 
-        // Chuyển tất cả sản phẩm thuộc category này về category "Uncategorized"
-        $category->products()->update(['category_id' => $uncategorized->id]);
-        
-        $category->delete();
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }
 }
