@@ -12,6 +12,9 @@ use App\Models\OrderDetail;
 use App\Models\User;
 use App\Models\Product;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderStatusChangedMail;
 
 class OrderController extends Controller
 {
@@ -348,24 +351,41 @@ class OrderController extends Controller
             ]);
         }
 
-        // If order is canceled, restore stock from order_details
-        if ($newStatus === 'canceled') {
-            foreach ($order->orderDetails as $detail) {
-                // Only restore stock if the product still exists
-                $product = Product::find($detail->product_id);
-                if ($product) {
-                    $product->increment('stock_quantity', $detail->quantity);
+        DB::beginTransaction();
+
+        try {
+            // If order is canceled, restore stock from order_details
+            if ($newStatus === 'canceled') {
+                foreach ($order->orderDetails as $detail) {
+                    $product = Product::find($detail->product_id);
+                    if ($product) {
+                        $product->increment('stock_quantity', $detail->quantity);
+                    }
                 }
             }
+
+            // Update only status
+            $order->update([
+                'status' => $newStatus,
+            ]);
+
+            DB::commit();
+
+            // Send email after commit succeeds
+            if ($order->user) {
+                Mail::to($order->user->email)->send(new OrderStatusChangedMail($order));
+            }
+
+            return redirect()->route('admin.orders.show', $order)
+                ->with('success', 'Order status updated and email sent successfully.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->withErrors([
+                'status' => 'Failed to update order: ' . $e->getMessage()
+            ]);
         }
-
-        // Update only status
-        $order->update([
-            'status' => $newStatus,
-        ]);
-
-        return redirect()->route('admin.orders.show', $order)
-            ->with('success', 'Order status updated successfully.');
     }
 
 

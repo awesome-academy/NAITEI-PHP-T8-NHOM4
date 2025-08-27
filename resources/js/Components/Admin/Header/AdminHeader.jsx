@@ -130,7 +130,7 @@ export default function AdminHeader({
                             </Dropdown.Link>
                             
                             <Dropdown.Link href="/admin/settings">
-                                <Cog6ToothIcon className="h-4 w-4 mr-2" />                                php artisan make:middleware HandleInertiaAdminRequests
+                                <Cog6ToothIcon className="h-4 w-4 mr-2" />
                                 Settings
                             </Dropdown.Link>
                             
