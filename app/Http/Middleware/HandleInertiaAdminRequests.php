@@ -62,7 +62,23 @@ class HandleInertiaAdminRequests extends Middleware
                     'isHeader' => true,
                     'requiredRole' => 'Admin',
                 ],
-            ]
+            ],
+
+            'notifications' => function () use ($user) {
+                if ($user) {
+                    return $user->notifications()->latest()->take(5)->get()->map(function ($notification) {
+                        return [
+                            'id' => $notification->id,
+                            'message' => $notification->data['message'] ?? 'No message content.',
+                            'order_id' => $notification->data['order_id'] ?? null,
+                            'time' => $notification->created_at->diffForHumans(),
+                            'read' => $notification->read_at !== null,
+                        ];
+                    });
+                }
+                return [];
+            },
+            'unreadNotificationsCount' => fn() => $user ? $user->unreadNotifications()->count() : 0,
         ]);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\OrderDetail;
 use App\Models\CartItem;
 use App\Exceptions\QuantityException;
 use Illuminate\Http\Request;
+use App\Events\OrderPlaced;
 
 class BillingController extends Controller
 {
@@ -147,6 +148,9 @@ class BillingController extends Controller
             CartItem::where('cart_id', $user->cart->id)->delete();
 
             DB::commit();
+
+
+            event(new OrderPlaced($order->load('user')));
 
             return redirect()->route('home')->with('success', 'Your order has been placed successfully!');
         } catch (QuantityException $e) {

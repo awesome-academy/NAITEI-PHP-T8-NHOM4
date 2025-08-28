@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link } from '@inertiajs/react';
+// SỬA ĐỔI: Thêm router từ Inertia
+import { Link, usePage, router } from '@inertiajs/react';
 import Dropdown from '@/Components/Dropdown';
 import { 
     Bars3Icon, 
@@ -11,21 +12,27 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function AdminHeader({ 
-    user, 
     sidebarOpened, 
     sidebarStatic, 
     onToggleSidebar, 
     onToggleSidebarStatic 
 }) {
+    const { auth, notifications, unreadNotificationsCount } = usePage().props;
+    const user = auth.user;
+
     const [searchFocus, setSearchFocus] = useState(false);
-    const [notifications] = useState([
-        { id: 1, message: 'New order received', time: '2 min ago', unread: true },
-        { id: 2, message: 'User registered', time: '1 hour ago', unread: true },
-        { id: 3, message: 'Product updated', time: '3 hours ago', unread: false },
-    ]);
 
-    const unreadCount = notifications.filter(n => n.unread).length;
 
+    const handleNotificationClick = (notification) => {
+        if (!notification.read) {
+            router.post(route('admin.notifications.markAsRead', notification.id), {}, {
+                preserveScroll: true, 
+                onSuccess: () => {
+                }
+            });
+        }
+    };
+    
     return (
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
             
@@ -74,9 +81,9 @@ export default function AdminHeader({
                         <Dropdown.Trigger>
                             <button className="relative p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500">
                                 <BellIcon className="h-6 w-6" />
-                                {unreadCount > 0 && (
+                                {unreadNotificationsCount > 0 && (
                                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                                        {unreadCount}
+                                        {unreadNotificationsCount}
                                     </span>
                                 )}
                             </button>
@@ -87,20 +94,35 @@ export default function AdminHeader({
                                 <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
                             </div>
                             <div className="max-h-64 overflow-y-auto">
-                                {notifications.map((notification) => (
-                                    <div 
-                                        key={notification.id} 
-                                        className={`p-3 border-b border-gray-100 hover:bg-gray-50 ${
-                                            notification.unread ? 'bg-blue-50' : ''
-                                        }`}
-                                    >
-                                        <p className="text-sm text-gray-900">{notification.message}</p>
-                                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                                    </div>
-                                ))}
+                                {notifications && notifications.length > 0 ? (
+                                    notifications.map((notification) => (
+                                        <Link 
+                                            href={notification.order_id ? route('admin.orders.show', notification.order_id) : '#'}
+                                            key={notification.id} 
+                                            onClick={() => handleNotificationClick(notification)} // THÊM DÒNG NÀY
+                                            className={`block p-3 border-b border-gray-100 hover:bg-gray-50 ${
+                                                !notification.read ? 'bg-blue-50' : ''
+                                            }`}
+                                        >
+                                            <div className="flex items-start">
+                                                <div className="flex-grow-1">
+                                                    <p className="text-sm text-gray-900">{notification.message}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                                                </div>
+                                                {notification.read && (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-green-500 ml-2 flex-shrink-0">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-sm text-gray-500">You have no new notifications.</div>
+                                )}
                             </div>
                             <div className="p-3 border-t border-gray-200">
-                                <Link href="/admin/notifications" className="text-sm text-blue-600 hover:text-blue-800">
+                                <Link href={route('admin.notifications.index')} className="text-sm text-blue-600 hover:text-blue-800">
                                     View all notifications
                                 </Link>
                             </div>
