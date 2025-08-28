@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\NotificationController;
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'can:is-admin', 'inertia.admin'])->group(function () {
@@ -74,4 +75,9 @@ Route::prefix('admin')->middleware(['auth', 'can:is-admin', 'inertia.admin'])->g
 
     // Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings.index');
+
+    // Notification Routes
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('admin.notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('admin.notifications.markAllAsRead');
 });
