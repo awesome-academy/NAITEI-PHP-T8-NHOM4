@@ -103,7 +103,7 @@ class ProductApiController extends Controller
      *                 @OA\Property(
      *                     property="data",
      *                     type="array",
-     *                     @OA\Items(ref="#/components/schemas/ProductListItem")
+     *                     @OA\Items(ref="#/components/schemas/Product")
      *                 ),
      *                 @OA\Property(property="first_page_url", type="string"),
      *                 @OA\Property(property="from", type="integer"),
@@ -162,7 +162,7 @@ class ProductApiController extends Controller
             // Sorting
             $sortBy = $request->get('sort_by', 'created_at');
             $sortOrder = $request->get('sort_order', 'desc');
-            
+
             if (in_array($sortBy, ['name', 'price', 'stock_quantity', 'created_at'])) {
                 $query->orderBy($sortBy, $sortOrder);
             }
@@ -189,8 +189,8 @@ class ProductApiController extends Controller
                             'path' => asset($image->image_path),
                         ];
                     }),
-                    'main_image' => $product->images->first() 
-                        ? asset($product->images->first()->image_path) 
+                    'main_image' => $product->images->first()
+                        ? asset($product->images->first()->image_path)
                         : null,
                     'created_at' => $product->created_at,
                     'updated_at' => $product->updated_at,
@@ -215,7 +215,6 @@ class ProductApiController extends Controller
                     'total' => $products->total(),
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -245,7 +244,7 @@ class ProductApiController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Product retrieved successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/ProductDetail")
+     *             @OA\Property(property="data", ref="#/components/schemas/Product")
      *         )
      *     ),
      *     @OA\Response(
@@ -331,7 +330,6 @@ class ProductApiController extends Controller
                 'message' => 'Product retrieved successfully',
                 'data' => $productData
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -367,7 +365,7 @@ class ProductApiController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Product created successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/ProductBasic")
+     *             @OA\Property(property="data", ref="#/components/schemas/Product")
      *         )
      *     ),
      *     @OA\Response(
@@ -439,7 +437,6 @@ class ProductApiController extends Controller
                     'updated_at' => $product->updated_at,
                 ]
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -487,7 +484,7 @@ class ProductApiController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Product updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/ProductBasic")
+     *             @OA\Property(property="data", ref="#/components/schemas/Product")
      *         )
      *     ),
      *     @OA\Response(
@@ -570,7 +567,6 @@ class ProductApiController extends Controller
                     'updated_at' => $product->updated_at,
                 ]
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -655,7 +651,6 @@ class ProductApiController extends Controller
                 'success' => true,
                 'message' => 'Product deleted successfully'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -698,7 +693,7 @@ class ProductApiController extends Controller
      *                 @OA\Property(
      *                     property="data",
      *                     type="array",
-     *                     @OA\Items(ref="#/components/schemas/ProductListItem")
+     *                     @OA\Items(ref="#/components/schemas/Product")
      *                 ),
      *                 @OA\Property(property="last_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
@@ -730,7 +725,7 @@ class ProductApiController extends Controller
     {
         try {
             $category = Category::find($categoryId);
-            
+
             if (!$category) {
                 return response()->json([
                     'success' => false,
@@ -749,8 +744,8 @@ class ProductApiController extends Controller
                     'description' => $product->description,
                     'price' => $product->price,
                     'stock_quantity' => $product->stock_quantity,
-                    'main_image' => $product->images->first() 
-                        ? asset($product->images->first()->image_path) 
+                    'main_image' => $product->images->first()
+                        ? asset($product->images->first()->image_path)
                         : null,
                     'created_at' => $product->created_at,
                 ];
@@ -771,7 +766,6 @@ class ProductApiController extends Controller
                     'total' => $products->total(),
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -809,7 +803,7 @@ class ProductApiController extends Controller
      *                 @OA\Property(
      *                     property="data",
      *                     type="array",
-     *                     @OA\Items(ref="#/components/schemas/ProductListItem")
+     *                     @OA\Items(ref="#/components/schemas/Product")
      *                 ),
      *                 @OA\Property(property="last_page", type="integer"),
      *                 @OA\Property(property="per_page", type="integer"),
@@ -841,7 +835,7 @@ class ProductApiController extends Controller
     {
         try {
             $query = $request->get('q', '');
-            
+
             if (empty($query)) {
                 return response()->json([
                     'success' => false,
@@ -868,8 +862,8 @@ class ProductApiController extends Controller
                         'id' => $product->category->id ?? null,
                         'name' => $product->category->name ?? null,
                     ],
-                    'main_image' => $product->images->first() 
-                        ? asset($product->images->first()->image_path) 
+                    'main_image' => $product->images->first()
+                        ? asset($product->images->first()->image_path)
                         : null,
                     'created_at' => $product->created_at,
                 ];
@@ -887,7 +881,6 @@ class ProductApiController extends Controller
                     'total' => $products->total(),
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -913,7 +906,7 @@ class ProductApiController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/ProductListItem")
+     *                 @OA\Items(ref="#/components/schemas/Product")
      *             )
      *         )
      *     ),
@@ -949,8 +942,8 @@ class ProductApiController extends Controller
                         'id' => $product->category->id ?? null,
                         'name' => $product->category->name ?? null,
                     ],
-                    'main_image' => $product->images->first() 
-                        ? asset($product->images->first()->image_path) 
+                    'main_image' => $product->images->first()
+                        ? asset($product->images->first()->image_path)
                         : null,
                     'created_at' => $product->created_at,
                 ];
@@ -961,7 +954,6 @@ class ProductApiController extends Controller
                 'message' => 'Featured products retrieved successfully',
                 'data' => $transformedProducts
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -971,116 +963,3 @@ class ProductApiController extends Controller
         }
     }
 }
-
-/**
- * @OA\Schema(
- *     schema="ProductListItem",
- *     type="object",
- *     title="Product List Item",
- *     description="Product item in list view",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="iPhone 14 Pro"),
- *     @OA\Property(property="description", type="string", example="Latest iPhone model"),
- *     @OA\Property(property="price", type="number", format="float", example=999.99),
- *     @OA\Property(property="stock_quantity", type="integer", example=50),
- *     @OA\Property(
- *         property="category",
- *         type="object",
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Electronics")
- *     ),
- *     @OA\Property(
- *         property="images",
- *         type="array",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="integer", example=1),
- *             @OA\Property(property="path", type="string", example="http://localhost:8000/images/products/1.jpg")
- *         )
- *     ),
- *     @OA\Property(property="main_image", type="string", nullable=true, example="http://localhost:8000/images/products/1.jpg"),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z")
- * )
- */
-
-/**
- * @OA\Schema(
- *     schema="ProductDetail",
- *     type="object",
- *     title="Product Detail",
- *     description="Detailed product information including reviews",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="iPhone 14 Pro"),
- *     @OA\Property(property="description", type="string", example="Latest iPhone model with advanced features"),
- *     @OA\Property(property="price", type="number", format="float", example=999.99),
- *     @OA\Property(property="stock_quantity", type="integer", example=50),
- *     @OA\Property(
- *         property="category",
- *         type="object",
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Electronics")
- *     ),
- *     @OA\Property(
- *         property="images",
- *         type="array",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="integer", example=1),
- *             @OA\Property(property="path", type="string", example="http://localhost:8000/images/products/1.jpg")
- *         )
- *     ),
- *     @OA\Property(
- *         property="feedbacks",
- *         type="array",
- *         @OA\Items(
- *             type="object",
- *             @OA\Property(property="id", type="integer", example=1),
- *             @OA\Property(property="rating", type="integer", example=5),
- *             @OA\Property(property="comment", type="string", example="Great product!"),
- *             @OA\Property(
- *                 property="user",
- *                 type="object",
- *                 @OA\Property(property="id", type="integer", example=1),
- *                 @OA\Property(property="username", type="string", example="john_doe")
- *             ),
- *             @OA\Property(
- *                 property="images",
- *                 type="array",
- *                 @OA\Items(
- *                     type="object",
- *                     @OA\Property(property="id", type="integer", example=1),
- *                     @OA\Property(property="path", type="string", example="http://localhost:8000/images/feedbacks/1.jpg")
- *                 )
- *             ),
- *             @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z")
- *         )
- *     ),
- *     @OA\Property(property="reviews_count", type="integer", example=10),
- *     @OA\Property(property="average_rating", type="number", format="float", example=4.5),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z")
- * )
- */
-
-/**
- * @OA\Schema(
- *     schema="ProductBasic",
- *     type="object",
- *     title="Product Basic",
- *     description="Basic product information",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="iPhone 14 Pro"),
- *     @OA\Property(property="description", type="string", example="Latest iPhone model"),
- *     @OA\Property(property="price", type="number", format="float", example=999.99),
- *     @OA\Property(property="stock_quantity", type="integer", example=50),
- *     @OA\Property(
- *         property="category",
- *         type="object",
- *         @OA\Property(property="id", type="integer", example=1),
- *         @OA\Property(property="name", type="string", example="Electronics")
- *     ),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2023-01-01T00:00:00.000000Z")
- * )
- */
