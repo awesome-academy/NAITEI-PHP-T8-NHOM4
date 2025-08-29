@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\UserApiController;
+use App\Http\Controllers\Api\OrderApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,7 @@ Route::prefix('products')->group(function () {
     Route::get('/search', [ProductApiController::class, 'search'])->name('api.products.search');
     Route::get('/category/{categoryId}', [ProductApiController::class, 'getByCategory'])->name('api.products.by-category');
     Route::get('/{id}', [ProductApiController::class, 'show'])->name('api.products.show');
+
     // Protected routes (require authentication)
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [ProductApiController::class, 'store'])->name('api.products.store');
@@ -49,4 +51,11 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     // extra route for deleting images
     Route::delete('/users/{userId}/images/{imageId}', [UserApiController::class, 'destroyUserImage'])
         ->name('api.admin.users.destroyImage');
+});
+// Order API Routes (Admin)
+Route::middleware(['auth:sanctum', 'can:is-admin'])->prefix('admin/orders')->group(function () {
+    Route::get('/', [OrderApiController::class, 'index'])->name('api.admin.orders.index');
+    Route::post('/', [OrderApiController::class, 'store'])->name('api.admin.orders.store');
+    Route::get('/{order}', [OrderApiController::class, 'show'])->name('api.admin.orders.show');
+    Route::put('/{order}/status', [OrderApiController::class, 'updateStatus'])->name('api.admin.orders.updateStatus');
 });

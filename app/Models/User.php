@@ -12,6 +12,18 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     type="object",
+ *     title="User Model",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="username", type="string", example="johndoe"),
+ *     @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+ *     @OA\Property(property="fname", type="string", example="John"),
+ *     @OA\Property(property="lname", type="string", example="Doe")
+ * )
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
